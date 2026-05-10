@@ -1,0 +1,13 @@
+target/
+*.class
+*.jar
+.idea/
+*.iml
+node_modules/
+dist/
+.vite/
+*.log
+uploads/
+__pycache__/
+*.pyc
+.DS_Store
