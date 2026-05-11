@@ -15,12 +15,13 @@
 | 安全认证 | Spring Security + JWT |
 | AOP | Spring AOP（预警检测切面） |
 | IoC 策略 | 策略模式实现 AQI 等级可插拔判定 |
+| DDL 执行 | JdbcTemplate（AUTO_INCREMENT 重置） |
 | 前端框架 | Vue 3 + Vite |
-| UI 库 | Element Plus |
+| UI 库 | Element Plus（含图标） |
 | 状态管理 | Pinia |
 | 路由 | Vue Router（含角色路由守卫） |
 | 图表 | ECharts 5 |
-| 数据源 | 和风天气 API（空气质量/天气预报/天气预警/天气指数） |
+| 数据源 | 和风天气 API（空气质量/天气/历史） |
 | HTTP 客户端 | OkHttp |
 | JSON 解析 | Jackson |
 
@@ -51,22 +52,22 @@ air-quality-system/
 │               │   └── AirQualityArticle.java  #   科普资讯实体
 │               │
 │               ├── mapper/                     # 📦 MyBatis Mapper 接口（7个，纯注解版）
-│               │   ├── UserMapper.java         #   用户数据操作
-│               │   ├── CityMapper.java         #   城市增删改查
-│               │   ├── AirQualityDataMapper.java # 空气质量数据 CRUD + 批量 + 趋势 + 清理
+│               │   ├── UserMapper.java         #   用户数据操作 + selectMaxId
+│               │   ├── CityMapper.java         #   城市增删改查 + selectMaxId
+│               │   ├── AirQualityDataMapper.java # 空气质量数据 CRUD + 批量 + 趋势 + 清理 + selectMaxId
 │               │   ├── UserFavoriteMapper.java #   收藏管理
-│               │   ├── AlertThresholdMapper.java  # 阈值管理
+│               │   ├── AlertThresholdMapper.java  # 阈值管理 + selectMaxId
 │               │   ├── SystemConfigMapper.java #   系统配置读写
-│               │   └── AirQualityArticleMapper.java # 资讯管理
+│               │   └── AirQualityArticleMapper.java # 资讯管理 + selectMaxId
 │               │
 │               ├── service/                    # 📦 业务服务层
-│               │   ├── UserService.java        #   用户注册/登录/修改/状态管理
-│               │   ├── CityService.java        #   城市管理
-│               │   ├── AirQualityDataService.java # 空气质量数据查询/趋势/收藏
+│               │   ├── UserService.java        #   用户注册/登录/修改/删除（含ID重置）
+│               │   ├── CityService.java        #   城市管理（含ID重置）
+│               │   ├── AirQualityDataService.java # 空气质量数据查询/趋势/删除（含ID重置）
 │               │   ├── UserFavoriteService.java   # 收藏管理
-│               │   ├── AlertThresholdService.java # 预警阈值管理
+│               │   ├── AlertThresholdService.java # 预警阈值管理（含ID重置）
 │               │   ├── SystemConfigService.java   # 系统配置
-│               │   ├── AirQualityArticleService.java # 资讯管理
+│               │   ├── AirQualityArticleService.java # 资讯管理（含ID重置）
 │               │   ├── AqiLevelService.java    # ★ AQI 等级判定（IoC 注入 6 种策略）
 │               │   ├── DataSyncService.java    # ★ 数据同步（实时采集 + 历史回填 + 15天清理）
 │               │   ├── HeFengApiService.java   # ★ 和风天气 API 调用（空气/天气/历史）
@@ -80,7 +81,7 @@ air-quality-system/
 │               │       ├── HeavyPollutionStrategy.java  # 重度污染 (201-300)
 │               │       └── SeverePollutionStrategy.java # 严重污染 (>300)
 │               │
-│               ├── controller/                 # 📦 REST API 控制器（8个）
+│               ├── controller/                 # 📦 REST API 控制器（9个）
 │               │   ├── AuthController.java     #   登录/注册（JWT 签发）
 │               │   ├── UserController.java     #   用户管理（管理员）
 │               │   ├── CityController.java     #   城市管理（管理员）
@@ -102,9 +103,10 @@ air-quality-system/
 │               │
 │               └── common/                      # 📦 公共类
 │                   ├── Result.java              #   统一 API 响应格式 {code, message, data}
-│                   └── AqiLevelResult.java      #   AQI 等级判定结果（等级名/颜色/健康提示）
+│                   ├── AqiLevelResult.java      #   AQI 等级判定结果（等级名/颜色/健康提示）
+│                   └── SqlUtils.java            #   AUTO_INCREMENT 重置工具（JdbcTemplate）
 │
-├── air-quality-frontend/                        # 🖥️ Vue 3 前端项目
+├── air-quality-frontend/                        # 🖥 Vue 3 前端项目
 │   ├── package.json                             #   依赖配置
 │   ├── vite.config.js                           #   Vite + 代理 + @别名
 │   ├── index.html                               #   入口 HTML
@@ -130,9 +132,9 @@ air-quality-system/
 │           ├── Register.vue                     #   注册页
 │           ├── layout/Layout.vue                #   后台布局（顶栏+侧栏+内容区）
 │           ├── dashboard/Dashboard.vue          #   首页（统计卡片+收藏城市AQI卡片+入口）
-│           ├── air-quality/AirQualityList.vue   #   空气质量查询列表
+│           ├── air-quality/AirQualityList.vue   #   空气质量查询列表（15天内筛选）
 │           ├── air-quality/AirQualityDetail.vue #   单条数据详情
-│           ├── charts/Charts.vue                #   数据可视化（趋势图+饼图+对比图）
+│           ├── charts/Charts.vue                #   数据可视化（趋势图+饼图+对比图，默认7天）
 │           ├── favorites/Favorites.vue          #   我的收藏（添加/删除城市）
 │           ├── articles/Articles.vue            #   科普资讯列表
 │           ├── articles/ArticleDetail.vue       #   资讯详情页
@@ -144,6 +146,18 @@ air-quality-system/
 │               ├── AlertThreshold.vue           #   预警阈值配置
 │               └── Articles.vue                 #   资讯发布管理
 ```
+
+## 数据库表
+
+| 表名 | 说明 |
+|------|------|
+| `user` | 用户表 |
+| `city` | 城市表（云南省16个城市，含经纬度+locationId） |
+| `air_quality_data` | 空气质量数据表（AQI/PM2.5/PM10/SO₂/NO₂/CO/O₃ + 温度/湿度/风向/风速/天气） |
+| `user_favorite` | 用户收藏关联表 |
+| `alert_threshold` | 预警阈值配置表 |
+| `system_config` | 系统配置表 |
+| `air_quality_article` | 科普资讯表 |
 
 ## API 接口一览
 
@@ -198,23 +212,29 @@ air-quality-system/
 
 每次采集完成后自动删除 15 天前的数据，确保数据库只保留最近 15 天记录。
 
-## 数据库表
+## 特色功能
 
-| 表名 | 说明 |
-|------|------|
-| `user` | 用户表 |
-| `city` | 城市表（云南省16个城市，含经纬度+locationId） |
-| `air_quality_data` | 空气质量数据表（AQI/PM2.5/PM10/SO₂/NO₂/CO/O₃ + 温度/湿度/风向/风速/天气） |
-| `user_favorite` | 用户收藏关联表 |
-| `alert_threshold` | 预警阈值配置表 |
-| `system_config` | 系统配置表 |
-| `air_quality_article` | 科普资讯表 |
+### AUTO_INCREMENT 自动重置
+
+删除任意记录后，下次新增时 ID 会自动回到被删除的位置，不会跳号。
+
+- 新增 [SqlUtils.java](file:///e:/air-quality-system/air-quality-backend/airquality/src/main/java/com/example/airquality/common/SqlUtils.java) — 使用 JdbcTemplate 执行 DDL
+- 每个含删除操作的 Service 在 delete 后自动调用 `resetAutoIncrement`
+- 覆盖表：`user`、`city`、`air_quality_data`、`air_quality_article`、`alert_threshold`
+
+### 前端日期筛选限制
+
+所有日期选择组件限制只能查询最近 15 天数据，与数据库保留策略一致。
+
+### 日志精简
+
+控制台日志级别已优化，仅显示 WARN 级别及以上系统日志，保留项目业务 INFO 日志。
 
 ## 启动指南
 
 ### 前置要求
 
-- JDK 21
+- JDK 21（必须，JDK 17 有 WeakPairMap Bug）
 - MySQL 8.0+
 - Redis
 - Node.js 18+
@@ -236,6 +256,10 @@ hefeng.api.key=your_api_key
 ```
 
 ### 3. 启动后端
+
+在 IDEA 中确保：
+- **文件 → 项目结构 → SDK**：选 JDK 21
+- **运行 → 编辑配置 → JRE**：选 JDK 21
 
 ```bash
 cd air-quality-backend/airquality

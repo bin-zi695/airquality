@@ -58,4 +58,7 @@ public interface UserMapper {
 
     @Update("UPDATE user SET status = #{status} WHERE id = #{id}")
     int updateStatus(@Param("id") Long id, @Param("status") Integer status);
+
+    @Select("SELECT COALESCE(MAX(id), 0) FROM user")
+    Long selectMaxId();
 }

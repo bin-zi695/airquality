@@ -32,7 +32,7 @@
         <el-table-column prop="date" label="日期" width="120" />
         <el-table-column label="城市" width="100">
           <template #default="{ row }">
-            <span class="city-label">🏙 {{ getCityName(row.cityId) }}</span>
+            <span class="city-label"><el-icon style="margin-right:2px"><OfficeBuilding /></el-icon>{{ getCityName(row.cityId) }}</span>
           </template>
         </el-table-column>
         <el-table-column label="AQI" width="80">

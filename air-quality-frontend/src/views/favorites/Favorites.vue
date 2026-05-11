@@ -6,7 +6,7 @@
       </template>
       <div class="add-row">
         <el-select v-model="selectedCityId" placeholder="搜索并选择城市" clearable size="large" class="city-picker">
-          <el-option v-for="c in allCities" :key="c.id" :label="`🏙 ${c.name} · ${c.province || ''}`" :value="c.id"
+          <el-option v-for="c in allCities" :key="c.id" :label="`${c.name} · ${c.province || ''}`" :value="c.id"
             :disabled="favCityIds.includes(c.id)" />
         </el-select>
         <el-button type="primary" size="large" round @click="addFavorite" :disabled="!selectedCityId">
@@ -23,7 +23,7 @@
       <el-table :data="favCities" border stripe>
         <el-table-column label="城市" min-width="150">
           <template #default="{ row }">
-            <span class="city-name-cell">🏙 {{ row.name }}</span>
+            <span class="city-name-cell"><el-icon style="margin-right:2px"><OfficeBuilding /></el-icon>{{ row.name }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="province" label="省份" width="120" />

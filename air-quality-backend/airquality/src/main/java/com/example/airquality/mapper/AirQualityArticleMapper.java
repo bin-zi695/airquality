@@ -41,4 +41,7 @@ public interface AirQualityArticleMapper {
 
     @Delete("DELETE FROM air_quality_article WHERE id = #{id}")
     int deleteById(Long id);
+
+    @Select("SELECT COALESCE(MAX(id), 0) FROM air_quality_article")
+    Long selectMaxId();
 }

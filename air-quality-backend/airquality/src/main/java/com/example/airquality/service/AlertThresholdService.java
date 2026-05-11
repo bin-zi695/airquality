@@ -1,5 +1,6 @@
 package com.example.airquality.service;
 
+import com.example.airquality.common.SqlUtils;
 import com.example.airquality.entity.AlertThreshold;
 import com.example.airquality.mapper.AlertThresholdMapper;
 import org.springframework.stereotype.Service;
@@ -10,9 +11,11 @@ import java.util.List;
 public class AlertThresholdService {
 
     private final AlertThresholdMapper alertThresholdMapper;
+    private final SqlUtils sqlUtils;
 
-    public AlertThresholdService(AlertThresholdMapper alertThresholdMapper) {
+    public AlertThresholdService(AlertThresholdMapper alertThresholdMapper, SqlUtils sqlUtils) {
         this.alertThresholdMapper = alertThresholdMapper;
+        this.sqlUtils = sqlUtils;
     }
 
     public AlertThreshold getById(Long id) {
@@ -37,5 +40,6 @@ public class AlertThresholdService {
 
     public void deleteById(Long id) {
         alertThresholdMapper.deleteById(id);
+        sqlUtils.resetAlertThresholdAutoIncrement(alertThresholdMapper.selectMaxId() + 1);
     }
 }

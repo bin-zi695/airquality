@@ -2,7 +2,7 @@
   <div class="article-detail">
     <el-page-header @back="$router.push('/articles')">
       <template #content>
-        <span class="page-header-title">📖 科普资讯</span>
+        <span class="page-header-title"><el-icon style="margin-right:4px"><Reading /></el-icon>科普资讯</span>
       </template>
     </el-page-header>
 
@@ -10,8 +10,8 @@
       <template v-if="article">
         <h1 class="article-title">{{ article.title }}</h1>
         <div class="article-meta">
-          <span>✍ {{ article.author }}</span>
-          <span>📅 {{ article.publishTime?.slice(0, 10) }}</span>
+          <span><el-icon style="margin-right:2px"><Edit /></el-icon>{{ article.author }}</span>
+          <span><el-icon style="margin-right:2px"><Calendar /></el-icon>{{ article.publishTime?.slice(0, 10) }}</span>
         </div>
         <el-divider />
         <div class="article-content" v-html="renderedContent"></div>

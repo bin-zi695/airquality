@@ -2,7 +2,7 @@
   <div class="dashboard">
     <div class="alert-wrap" v-if="alertVisible">
       <el-alert
-        :title="`⚠ AQI 预警: ${alertCityName} 当前 AQI 为 ${alertData.aqi}，请注意防护！`"
+        :title="`AQI 预警: ${alertCityName} 当前 AQI 为 ${alertData.aqi}，请注意防护！`"
         type="warning"
         :closable="true"
         show-icon
@@ -39,7 +39,7 @@
               <el-option v-for="d in dates" :key="d" :label="d" :value="d" />
             </el-select>
             <el-button type="primary" size="small" round @click="$router.push('/favorites')">
-              管理收藏 →
+              管理收藏 <el-icon style="margin-left:2px"><ArrowRight /></el-icon>
             </el-button>
           </div>
         </div>
@@ -51,13 +51,13 @@
 
       <div class="empty-wrap" v-else-if="!hasFavorites">
         <el-empty description="还没有收藏城市，快去添加吧">
-          <el-button type="primary" round @click="$router.push('/air-quality')">🚀 去查询</el-button>
+          <el-button type="primary" round @click="$router.push('/air-quality')"><el-icon style="margin-right:4px"><Search /></el-icon>去查询</el-button>
         </el-empty>
       </div>
 
       <div class="empty-wrap" v-else-if="!favoriteData.length">
         <el-empty description="收藏的城市暂无空气质量数据" :image-size="100">
-          <el-button type="primary" round @click="$router.push('/air-quality')">🔍 去查询</el-button>
+          <el-button type="primary" round @click="$router.push('/air-quality')"><el-icon style="margin-right:4px"><Search /></el-icon>去查询</el-button>
         </el-empty>
       </div>
 
@@ -66,7 +66,7 @@
           <div class="aqi-card-new" :style="{ borderTopColor: getAqiColor(item.aqi) }" @click="$router.push(`/air-quality/${item.id}`)">
             <div class="aqi-top">
               <div class="aqi-city">
-                <span class="city-icon">🏙️</span>
+                <el-icon style="margin-right:2px"><OfficeBuilding /></el-icon>
                 {{ getCityName(item.cityId) }}
               </div>
               <span class="aqi-badge-sm" :style="{ background: getAqiColor(item.aqi) }">
@@ -99,7 +99,7 @@
                 <div class="p-val nowrap-text">{{ item.weather || '-' }}</div>
               </div>
             </div>
-            <div class="aqi-date">📅 {{ item.date }}</div>
+            <div class="aqi-date"><el-icon style="margin-right:2px;vertical-align:middle"><Calendar /></el-icon>{{ item.date }}</div>
           </div>
         </el-col>
       </el-row>
@@ -108,22 +108,22 @@
     <el-row :gutter="20">
       <el-col :span="12">
         <div class="feature-card chart-card" @click="$router.push('/charts')">
-          <div class="fc-icon">📊</div>
+          <div class="fc-icon"><el-icon :size="36"><TrendCharts /></el-icon></div>
           <div class="fc-info">
             <div class="fc-title">数据可视化</div>
             <div class="fc-desc">查看空气质量趋势、分布与城市对比图表</div>
           </div>
-          <div class="fc-arrow">→</div>
+          <div class="fc-arrow"><el-icon><ArrowRight /></el-icon></div>
         </div>
       </el-col>
       <el-col :span="12">
         <div class="feature-card article-card" @click="$router.push('/articles')">
-          <div class="fc-icon">📖</div>
+          <div class="fc-icon"><el-icon :size="36"><Reading /></el-icon></div>
           <div class="fc-info">
             <div class="fc-title">科普资讯</div>
             <div class="fc-desc">了解空气质量知识，学会科学防护</div>
           </div>
-          <div class="fc-arrow">→</div>
+          <div class="fc-arrow"><el-icon><ArrowRight /></el-icon></div>
         </div>
       </el-col>
     </el-row>
@@ -203,15 +203,14 @@ onMounted(async () => {
     }
 
     let airData = []
-    if (count === 0) {
-      const latestRes = await airDataApi.getLatestByCity(1)
-      if (latestRes.data) airData = [latestRes.data]
-    } else if (selectedDate.value) {
-      const favRes = await airDataApi.getFavoritesByDate(userId, selectedDate.value)
-      airData = favRes.data || []
-    } else {
-      const favRes = await airDataApi.getLatestByFavorites(userId)
-      airData = favRes.data || []
+    if (count > 0) {
+      if (selectedDate.value) {
+        const favRes = await airDataApi.getFavoritesByDate(userId, selectedDate.value)
+        airData = favRes.data || []
+      } else {
+        const favRes = await airDataApi.getLatestByFavorites(userId)
+        airData = favRes.data || []
+      }
     }
     favoriteData.value = airData
 

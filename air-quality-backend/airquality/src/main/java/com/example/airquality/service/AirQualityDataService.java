@@ -1,20 +1,22 @@
 package com.example.airquality.service;
 
-import java.time.LocalDate;
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-
+import com.example.airquality.common.SqlUtils;
 import com.example.airquality.entity.AirQualityData;
 import com.example.airquality.mapper.AirQualityDataMapper;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class AirQualityDataService {
 
     private final AirQualityDataMapper airQualityDataMapper;
+    private final SqlUtils sqlUtils;
 
-    public AirQualityDataService(AirQualityDataMapper airQualityDataMapper) {
+    public AirQualityDataService(AirQualityDataMapper airQualityDataMapper, SqlUtils sqlUtils) {
         this.airQualityDataMapper = airQualityDataMapper;
+        this.sqlUtils = sqlUtils;
     }
 
     public AirQualityData getById(Long id) {
@@ -71,10 +73,12 @@ public class AirQualityDataService {
 
     public void deleteById(Long id) {
         airQualityDataMapper.deleteById(id);
+        sqlUtils.resetAirDataAutoIncrement(airQualityDataMapper.selectMaxId() + 1);
     }
 
     public void deleteByCityId(Long cityId) {
         airQualityDataMapper.deleteByCityId(cityId);
+        sqlUtils.resetAirDataAutoIncrement(airQualityDataMapper.selectMaxId() + 1);
     }
 
     public void batchSave(List<AirQualityData> list) {

@@ -29,4 +29,7 @@ public interface AlertThresholdMapper {
 
     @Delete("DELETE FROM alert_threshold WHERE id = #{id}")
     int deleteById(Long id);
+
+    @Select("SELECT COALESCE(MAX(id), 0) FROM alert_threshold")
+    Long selectMaxId();
 }

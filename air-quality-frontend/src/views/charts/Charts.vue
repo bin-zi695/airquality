@@ -24,7 +24,7 @@
     <el-row :gutter="16">
       <el-col :span="24">
         <el-card class="chart-card" shadow="never">
-          <template #header><span class="chart-title">📈 空气质量趋势</span></template>
+          <template #header><span class="chart-title"><el-icon style="margin-right:4px"><TrendCharts /></el-icon>空气质量趋势</span></template>
           <div ref="trendChart" style="height:350px"></div>
         </el-card>
       </el-col>
@@ -32,7 +32,7 @@
     <el-row :gutter="16" style="margin-top:16px">
       <el-col :span="12">
         <el-card class="chart-card" shadow="never">
-          <template #header><span class="chart-title">🎯 AQI 等级分布</span></template>
+          <template #header><span class="chart-title"><el-icon style="margin-right:4px"><Aim /></el-icon>AQI 等级分布</span></template>
           <div ref="pieChart" style="height:350px"></div>
         </el-card>
       </el-col>
@@ -40,7 +40,7 @@
         <el-card class="chart-card" shadow="never">
           <template #header>
             <div class="chart-header-row">
-              <span class="chart-title">🏙️ 多城市对比</span>
+              <span class="chart-title"><el-icon style="margin-right:4px"><OfficeBuilding /></el-icon>多城市对比</span>
               <span class="chart-date-hint" v-if="compareDate">{{ compareDate }}</span>
             </div>
           </template>
@@ -59,7 +59,7 @@ import { airDataApi, cityApi } from '@/api'
 
 const cities = ref([])
 const cityId = ref(1)
-const range = ref('30')
+const range = ref('7')
 const compareDate = ref('')
 const allDates = ref([])
 const cityMap = ref({})

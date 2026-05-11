@@ -48,7 +48,7 @@
           <el-input v-model="form.phone" size="large" placeholder="请输入手机号" />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" size="large" round @click="saveProfile" :loading="saving">💾 保存修改</el-button>
+          <el-button type="primary" size="large" round @click="saveProfile" :loading="saving"><el-icon style="margin-right:4px"><FolderChecked /></el-icon>保存修改</el-button>
         </el-form-item>
       </el-form>
     </el-card>

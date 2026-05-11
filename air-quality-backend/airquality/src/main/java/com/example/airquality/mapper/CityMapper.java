@@ -46,4 +46,7 @@ public interface CityMapper {
 
     @Delete("DELETE FROM city WHERE id = #{id}")
     int deleteById(Long id);
+
+    @Select("SELECT COALESCE(MAX(id), 0) FROM city")
+    Long selectMaxId();
 }

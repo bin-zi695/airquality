@@ -108,4 +108,7 @@ public interface AirQualityDataMapper {
 
     @Delete("DELETE FROM air_quality_data WHERE date < #{date}")
     int deleteOlderThan(LocalDate date);
+
+    @Select("SELECT COALESCE(MAX(id), 0) FROM air_quality_data")
+    Long selectMaxId();
 }

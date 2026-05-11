@@ -1,6 +1,7 @@
 package com.example.airquality.service;
 
 import com.example.airquality.common.Result;
+import com.example.airquality.common.SqlUtils;
 import com.example.airquality.entity.User;
 import com.example.airquality.mapper.UserMapper;
 import org.springframework.stereotype.Service;
@@ -11,9 +12,11 @@ import java.util.List;
 public class UserService {
 
     private final UserMapper userMapper;
+    private final SqlUtils sqlUtils;
 
-    public UserService(UserMapper userMapper) {
+    public UserService(UserMapper userMapper, SqlUtils sqlUtils) {
         this.userMapper = userMapper;
+        this.sqlUtils = sqlUtils;
     }
 
     public User getById(Long id) {
@@ -47,5 +50,6 @@ public class UserService {
 
     public void deleteById(Long id) {
         userMapper.deleteById(id);
+        sqlUtils.resetUserAutoIncrement(userMapper.selectMaxId() + 1);
     }
 }

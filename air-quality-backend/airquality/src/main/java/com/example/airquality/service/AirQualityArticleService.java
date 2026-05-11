@@ -1,5 +1,6 @@
 package com.example.airquality.service;
 
+import com.example.airquality.common.SqlUtils;
 import com.example.airquality.entity.AirQualityArticle;
 import com.example.airquality.mapper.AirQualityArticleMapper;
 import org.springframework.stereotype.Service;
@@ -10,9 +11,11 @@ import java.util.List;
 public class AirQualityArticleService {
 
     private final AirQualityArticleMapper articleMapper;
+    private final SqlUtils sqlUtils;
 
-    public AirQualityArticleService(AirQualityArticleMapper articleMapper) {
+    public AirQualityArticleService(AirQualityArticleMapper articleMapper, SqlUtils sqlUtils) {
         this.articleMapper = articleMapper;
+        this.sqlUtils = sqlUtils;
     }
 
     public AirQualityArticle getById(Long id) {
@@ -37,5 +40,6 @@ public class AirQualityArticleService {
 
     public void deleteById(Long id) {
         articleMapper.deleteById(id);
+        sqlUtils.resetArticleAutoIncrement(articleMapper.selectMaxId() + 1);
     }
 }

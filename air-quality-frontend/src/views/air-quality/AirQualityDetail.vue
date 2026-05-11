@@ -2,7 +2,7 @@
   <div class="detail-page">
     <el-page-header @back="$router.back()">
       <template #content>
-        <span class="page-header-title">📋 数据详情</span>
+        <span class="page-header-title"><el-icon style="margin-right:4px"><Document /></el-icon>数据详情</span>
       </template>
     </el-page-header>
     <el-card class="detail-card" shadow="never" v-loading="loading">

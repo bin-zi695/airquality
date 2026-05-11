@@ -2,7 +2,7 @@
   <el-container class="layout-container">
     <el-header class="layout-header">
       <div class="header-left">
-        <span class="logo-icon">🌿</span>
+        <el-icon :size="26" color="#4CAF50"><Sunny /></el-icon>
         <span class="logo-text">城市空气质量管理系统</span>
       </div>
       <div class="header-right" v-if="userStore.isLoggedIn">
@@ -84,11 +84,11 @@
                 <el-icon><Setting /></el-icon>
                 <span>系统管理</span>
               </template>
-              <el-menu-item index="/admin/users">👥 用户管理</el-menu-item>
-              <el-menu-item index="/admin/cities">🏙️ 城市管理</el-menu-item>
-              <el-menu-item index="/admin/air-data">📋 数据管理</el-menu-item>
-              <el-menu-item index="/admin/alert">⚙️ 预警配置</el-menu-item>
-              <el-menu-item index="/admin/articles">📝 资讯管理</el-menu-item>
+              <el-menu-item index="/admin/users"><el-icon><UserFilled /></el-icon><span>用户管理</span></el-menu-item>
+              <el-menu-item index="/admin/cities"><el-icon><OfficeBuilding /></el-icon><span>城市管理</span></el-menu-item>
+              <el-menu-item index="/admin/air-data"><el-icon><Document /></el-icon><span>数据管理</span></el-menu-item>
+              <el-menu-item index="/admin/alert"><el-icon><Setting /></el-icon><span>预警配置</span></el-menu-item>
+              <el-menu-item index="/admin/articles"><el-icon><Edit /></el-icon><span>资讯管理</span></el-menu-item>
             </el-sub-menu>
           </template>
         </el-menu>
@@ -106,7 +106,7 @@
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/store/user'
-import { User, UserFilled, SwitchButton, Bell } from '@element-plus/icons-vue'
+import { User, UserFilled, SwitchButton, Bell, Sunny, OfficeBuilding, Document, Edit } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()

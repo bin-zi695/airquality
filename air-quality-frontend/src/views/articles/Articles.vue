@@ -1,19 +1,19 @@
 <template>
   <div class="articles-page">
     <div class="page-header">
-      <h2 class="page-title">📖 科普资讯</h2>
+      <h2 class="page-title"><el-icon style="margin-right:6px"><Reading /></el-icon>科普资讯</h2>
       <p class="page-desc">了解空气质量知识，学会科学防护</p>
     </div>
     <div class="articles-grid">
       <div v-for="a in articles" :key="a.id" class="article-card" @click="$router.push(`/articles/${a.id}`)">
         <div class="article-inner">
-          <div class="article-icon">📄</div>
+          <div class="article-icon"><el-icon :size="28"><Document /></el-icon></div>
           <div class="article-body">
             <h3 class="article-title">{{ a.title }}</h3>
             <p class="summary">{{ a.summary }}</p>
             <div class="meta">
-              <span>✍ {{ a.author }}</span>
-              <span>📅 {{ a.publishTime?.slice(0,10) }}</span>
+              <span><el-icon style="margin-right:2px"><Edit /></el-icon>{{ a.author }}</span>
+              <span><el-icon style="margin-right:2px"><Calendar /></el-icon>{{ a.publishTime?.slice(0,10) }}</span>
             </div>
           </div>
         </div>

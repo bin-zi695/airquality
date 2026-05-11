@@ -4,7 +4,7 @@
       <div class="register-left">
         <div class="left-content">
           <div class="brand-icon">
-            <span class="icon-leaf">🌿</span>
+            <el-icon :size="40" color="#4CAF50"><Sunny /></el-icon>
           </div>
           <h1 class="brand-title">加入我们</h1>
           <p class="brand-desc">
@@ -12,19 +12,19 @@
           </p>
           <div class="feature-list">
             <div class="feature-item">
-              <span class="feature-icon">📊</span>
+              <el-icon class="feature-icon"><TrendCharts /></el-icon>
               <span>多维度空气质量数据可视化</span>
             </div>
             <div class="feature-item">
-              <span class="feature-icon">🔔</span>
+              <el-icon class="feature-icon"><Bell /></el-icon>
               <span>AQI 超标智能预警通知</span>
             </div>
             <div class="feature-item">
-              <span class="feature-icon">⭐</span>
+              <el-icon class="feature-icon"><Star /></el-icon>
               <span>城市收藏与个性化数据展示</span>
             </div>
             <div class="feature-item">
-              <span class="feature-icon">📖</span>
+              <el-icon class="feature-icon"><Reading /></el-icon>
               <span>空气质量科普与防护指南</span>
             </div>
           </div>
