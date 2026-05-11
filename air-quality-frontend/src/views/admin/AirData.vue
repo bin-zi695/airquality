@@ -2,6 +2,9 @@
   <div class="admin-air-data">
     <el-card>
       <el-button type="primary" @click="openDialog(null)">新增数据记录</el-button>
+      <el-button type="success" @click="triggerSync" :loading="syncing" style="margin-left:12px">
+        <el-icon><Refresh /></el-icon> 采集数据
+      </el-button>
     </el-card>
 
     <el-card style="margin-top:16px">
@@ -63,8 +66,11 @@
 import { ref, reactive, onMounted } from 'vue'
 import { airDataApi, cityApi } from '@/api'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Refresh } from '@element-plus/icons-vue'
+import axios from 'axios'
 
 const loading = ref(false)
+const syncing = ref(false)
 const saving = ref(false)
 const tableData = ref([])
 const cities = ref([])
@@ -112,6 +118,16 @@ async function deleteData(row) {
   await airDataApi.delete(row.id)
   ElMessage.success('删除成功')
   fetchData()
+}
+
+async function triggerSync() {
+  syncing.value = true
+  try {
+    await axios.post('/api/admin/sync-now')
+    ElMessage.success('数据采集已启动，稍后刷新页面查看')
+  } catch (e) {
+    ElMessage.error('采集失败')
+  } finally { syncing.value = false }
 }
 
 onMounted(async () => {

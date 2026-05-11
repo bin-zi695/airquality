@@ -39,6 +39,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/air-data", "/api/air-data/**").permitAll()
                 .requestMatchers("/api/alert-thresholds/enabled").permitAll()
                 .requestMatchers("/api/upload/**").permitAll()
+                .requestMatchers("/api/admin/sync-now").permitAll()
+                .requestMatchers("/api/admin/sync-history").permitAll()
                 .requestMatchers("/api/admin/**").authenticated()
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().permitAll()

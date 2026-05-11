@@ -16,26 +16,26 @@ public class SyncScheduler {
     }
 
     @Scheduled(cron = "0 0 1 * * ?")
-    public void syncYesterday() {
-        log.info("定时任务: 凌晨1:00 拉取昨日数据");
-        dataSyncService.syncYesterdayData();
+    public void syncAt1am() {
+        log.info("=== 定时任务: 凌晨1:00 采集昨日数据(时光机API) ===");
+        dataSyncService.syncYesterday();
     }
 
     @Scheduled(cron = "0 0 8 * * ?")
-    public void syncMorning() {
-        log.info("定时任务: 早上8:00 拉取今日数据");
+    public void syncAt8am() {
+        log.info("=== 定时任务: 早上8:00 ===");
         dataSyncService.syncTodayData();
     }
 
     @Scheduled(cron = "0 0 14 * * ?")
-    public void syncAfternoon() {
-        log.info("定时任务: 下午14:00 更新今日数据");
+    public void syncAt2pm() {
+        log.info("=== 定时任务: 下午14:00 ===");
         dataSyncService.syncTodayData();
     }
 
     @Scheduled(cron = "0 0 20 * * ?")
-    public void syncEvening() {
-        log.info("定时任务: 晚上20:00 更新今日数据");
+    public void syncAt8pm() {
+        log.info("=== 定时任务: 晚上20:00 ===");
         dataSyncService.syncTodayData();
     }
 }

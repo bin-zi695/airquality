@@ -28,90 +28,220 @@ public class DataSyncService {
         this.airQualityDataMapper = airQualityDataMapper;
     }
 
-    public void syncLatestForAllCities() {
-        LocalDate today = LocalDate.now();
-        LocalDate yesterday = today.minusDays(1);
-        List<City> cities = cityMapper.selectAll();
-        for (City city : cities) {
-            try {
-                syncCityDate(city, yesterday);
-                Thread.sleep(300);
-            } catch (Exception e) {
-                log.warn("同步昨日数据失败: {} {}", city.getName(), e.getMessage());
-            }
-        }
-        for (City city : cities) {
-            try {
-                syncCityDate(city, today);
-                Thread.sleep(300);
-            } catch (Exception e) {
-                log.warn("同步今日数据失败: {} {}", city.getName(), e.getMessage());
-            }
-        }
-    }
-
     public void syncTodayData() {
-        LocalDate today = LocalDate.now();
-        List<City> cities = cityMapper.selectAll();
-        for (City city : cities) {
-            try {
-                syncCityDate(city, today);
-                Thread.sleep(300);
-            } catch (Exception e) {
-                log.warn("同步今日数据失败: {} {}", city.getName(), e.getMessage());
-            }
-        }
+        log.info("开始同步今日所有城市空气质量数据...");
+        syncDate(LocalDate.now());
     }
 
-    public void syncYesterdayData() {
+    public void syncYesterday() {
         LocalDate yesterday = LocalDate.now().minusDays(1);
+        String dateStr = yesterday.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd"));
+        log.info("开始同步昨日({})所有城市数据(使用时光机API)...", yesterday);
         List<City> cities = cityMapper.selectAll();
+        int success = 0, fail = 0;
         for (City city : cities) {
             try {
-                syncCityDate(city, yesterday);
+                if (backfillSingleDay(city, yesterday, dateStr)) success++;
+                else fail++;
                 Thread.sleep(300);
             } catch (Exception e) {
-                log.warn("同步昨日数据失败: {} {}", city.getName(), e.getMessage());
+                log.warn("同步异常: {} {}", city.getName(), e.getMessage());
+                fail++;
             }
         }
+        log.info("昨日同步完成: 成功{} 失败{} (共{}城市)", success, fail, cities.size());
     }
 
-    public int syncHistory10Days() {
-        int total = 0;
+    private void syncDate(LocalDate date) {
         List<City> cities = cityMapper.selectAll();
+        int success = 0, fail = 0;
         for (City city : cities) {
-            for (int i = 1; i <= 10; i++) {
-                LocalDate d = LocalDate.now().minusDays(i);
-                try {
-                    boolean ok = syncCityDate(city, d);
-                    if (ok) total++;
-                    Thread.sleep(300);
-                } catch (Exception e) {
-                    log.warn("同步历史数据失败: {} {} {}", city.getName(), d, e.getMessage());
-                }
+            try {
+                if (syncCityNow(city, date)) success++;
+                else fail++;
+                Thread.sleep(300);
+            } catch (Exception e) {
+                log.warn("同步异常: {} {}", city.getName(), e.getMessage());
+                fail++;
             }
         }
-        log.info("历史数据同步完成，共入库 {} 条", total);
-        return total;
+        log.info("{}同步完成: 成功{} 失败{} (共{}城市)", date, success, fail, cities.size());
     }
 
-    public boolean syncCityDate(City city, LocalDate date) {
-        if (city.getLocationId() == null) return false;
+    public boolean syncCityNow(City city, LocalDate date) {
+        if (city.getLatitude() == null || city.getLongitude() == null) {
+            log.warn("{} 无经纬度, 跳过", city.getName());
+            return false;
+        }
         try {
-            JsonNode root = heFengApiService.getHistoricalAirQuality(city.getLocationId(), date.toString());
-            if (root == null || !"200".equals(root.path("code").asText())) {
-                log.debug("API返回异常: {} {} code={}", city.getName(), date, root != null ? root.path("code").asText() : "null");
+            log.info("开始同步城市: {} (lat={}, lng={})", city.getName(), city.getLatitude(), city.getLongitude());
+            JsonNode root = heFengApiService.getNowAirQuality(city.getLatitude(), city.getLongitude());
+            if (root == null) {
+                log.warn("{} API返回null", city.getName());
                 return false;
             }
 
-            JsonNode dataNode = root.path("now");
-            if (dataNode.isMissingNode() || dataNode.isNull()) return false;
+            JsonNode indexes = root.path("indexes");
+            if (indexes.isMissingNode() || !indexes.isArray() || indexes.size() == 0) {
+                log.warn("{} API返回中无indexes数据", city.getName());
+                return false;
+            }
 
-            AirQualityData record = parseNode(dataNode);
-            if (record == null) return false;
+            int aqi = 0;
+            JsonNode pollutantsNode = root.path("pollutants");
+
+            for (JsonNode idx : indexes) {
+                if ("cn-mee".equals(idx.path("code").asText())) {
+                    aqi = idx.path("aqi").asInt(0);
+                    break;
+                }
+            }
+            if (aqi == 0 && indexes.size() > 0) {
+                aqi = indexes.get(0).path("aqi").asInt(0);
+            }
+
+            AirQualityData record = new AirQualityData();
+            record.setAqi(aqi);
+
+            if (pollutantsNode.isArray()) {
+                for (JsonNode p : pollutantsNode) {
+                    String code = p.path("code").asText();
+                    JsonNode conc = p.path("concentration");
+                    double val = conc.path("value").asDouble(0);
+                    switch (code) {
+                        case "pm2p5": record.setPm25(val); break;
+                        case "pm10": record.setPm10(val); break;
+                        case "so2": record.setSo2(val); break;
+                        case "no2": record.setNo2(val); break;
+                        case "co": record.setCo(val); break;
+                        case "o3": record.setO3(val); break;
+                    }
+                }
+            }
+
+            try {
+                JsonNode weather = heFengApiService.getNowWeather(city.getLatitude(), city.getLongitude());
+                if (weather != null && "200".equals(weather.path("code").asText())) {
+                    JsonNode now = weather.path("now");
+                    if (!now.isMissingNode()) {
+                        record.setTemperature(parseDouble(now, "temp"));
+                        record.setHumidity(parseDouble(now, "humidity"));
+                        record.setWindDirection(now.path("windDir").asText(null));
+                        record.setWindSpeed(now.path("windSpeed").asText(null));
+                        record.setWeather(now.path("text").asText(null));
+                        log.info("{} 天气: temp={} humidity={} wind={} {}",
+                                city.getName(), record.getTemperature(), record.getHumidity(),
+                                record.getWindDirection(), record.getWeather());
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("{} 天气数据获取失败: {}", city.getName(), e.getMessage());
+            }
 
             record.setCityId(city.getId());
             record.setDate(date);
+
+            if (record.getAqi() == 0 && record.getPm25() == null) {
+                log.warn("{} 空气质量数据全为空, 跳过", city.getName());
+                return false;
+            }
+
+            AirQualityData exist = airQualityDataMapper.selectByCityAndDate(city.getId(), date);
+            if (exist != null) {
+                record.setId(exist.getId());
+                airQualityDataMapper.update(record);
+                log.info("{} 更新成功 AQI={} PM2.5={}", city.getName(), record.getAqi(), record.getPm25());
+            } else {
+                airQualityDataMapper.insert(record);
+                log.info("{} 入库成功 AQI={} PM2.5={}", city.getName(), record.getAqi(), record.getPm25());
+            }
+            return true;
+        } catch (Exception e) {
+            log.error("{} 同步失败: {}", city.getName(), e.getMessage(), e);
+            return false;
+        }
+    }
+
+    private Double parseDouble(JsonNode parent, String field) {
+        JsonNode node = parent.get(field);
+        if (node == null || node.isNull()) return null;
+        try {
+            return node.asDouble();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public void syncHistory(int days) {
+        LocalDate today = LocalDate.now();
+        LocalDate start = today.minusDays(days);
+        int totalSuccess = 0, totalFail = 0;
+
+        for (LocalDate date = start; date.isBefore(today); date = date.plusDays(1)) {
+            String dateStr = date.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd"));
+            log.info("========== 回填历史数据: {} ==========", date);
+            for (City city : cityMapper.selectAll()) {
+                try {
+                    if (backfillSingleDay(city, date, dateStr)) totalSuccess++;
+                    else totalFail++;
+                    Thread.sleep(200);
+                } catch (Exception e) {
+                    log.warn("{} {} 回填异常: {}", city.getName(), date, e.getMessage());
+                    totalFail++;
+                }
+            }
+        }
+        log.info("历史回填完成: 成功{} 失败{}", totalSuccess, totalFail);
+    }
+
+    private boolean backfillSingleDay(City city, LocalDate date, String dateStr) {
+        if (city.getLocationId() == null || city.getLocationId().isBlank()) {
+            return false;
+        }
+        try {
+            JsonNode airRoot = heFengApiService.getHistoricalAir(city.getLocationId(), dateStr);
+            if (airRoot == null || !"200".equals(airRoot.path("code").asText())) {
+                log.debug("{} {} 历史空气质量无数据", city.getName(), date);
+                return false;
+            }
+
+            JsonNode airHourly = airRoot.path("airHourly");
+            if (!airHourly.isArray() || airHourly.size() == 0) return false;
+
+            JsonNode latest = airHourly.get(airHourly.size() - 1);
+
+            AirQualityData record = new AirQualityData();
+            record.setCityId(city.getId());
+            record.setDate(date);
+            record.setAqi(parseInt(latest, "aqi"));
+            record.setPm25(parseDouble(latest, "pm2p5"));
+            record.setPm10(parseDouble(latest, "pm10"));
+            record.setSo2(parseDouble(latest, "so2"));
+            record.setNo2(parseDouble(latest, "no2"));
+            record.setCo(parseDouble(latest, "co"));
+            record.setO3(parseDouble(latest, "o3"));
+
+            if (record.getAqi() == null && record.getPm25() == null) return false;
+
+            try {
+                JsonNode weatherRoot = heFengApiService.getHistoricalWeather(city.getLocationId(), dateStr);
+                if (weatherRoot != null && "200".equals(weatherRoot.path("code").asText())) {
+                    JsonNode daily = weatherRoot.path("weatherDaily");
+                    if (!daily.isMissingNode()) {
+                        record.setTemperature(parseDouble(daily, "tempMax"));
+                        record.setHumidity(parseDouble(daily, "humidity"));
+                    }
+                    JsonNode hourly = weatherRoot.path("weatherHourly");
+                    if (hourly.isArray() && hourly.size() > 0) {
+                        JsonNode lastH = hourly.get(hourly.size() - 1);
+                        record.setWindDirection(lastH.path("windDir").asText(null));
+                        record.setWindSpeed(lastH.path("windSpeed").asText(null));
+                        record.setWeather(lastH.path("text").asText(null));
+                    }
+                }
+            } catch (Exception e) {
+                log.debug("{} {} 历史天气无数据", city.getName(), date);
+            }
 
             AirQualityData exist = airQualityDataMapper.selectByCityAndDate(city.getId(), date);
             if (exist != null) {
@@ -120,23 +250,21 @@ public class DataSyncService {
             } else {
                 airQualityDataMapper.insert(record);
             }
+            log.info("{} {} 历史回填成功 AQI={}", city.getName(), date, record.getAqi());
             return true;
         } catch (Exception e) {
-            log.error("同步异常: {} {}", city.getName(), e.getMessage());
+            log.warn("{} {} 历史回填失败: {}", city.getName(), date, e.getMessage());
             return false;
         }
     }
 
-    private AirQualityData parseNode(JsonNode n) {
-        if (n == null || n.isMissingNode()) return null;
-        AirQualityData d = new AirQualityData();
-        d.setAqi(n.path("aqi").asInt());
-        d.setPm25(n.has("pm2p5") && !n.get("pm2p5").isNull() ? n.get("pm2p5").asDouble() : null);
-        d.setPm10(n.has("pm10") && !n.get("pm10").isNull() ? n.get("pm10").asDouble() : null);
-        d.setSo2(n.has("so2") && !n.get("so2").isNull() ? n.get("so2").asDouble() : null);
-        d.setNo2(n.has("no2") && !n.get("no2").isNull() ? n.get("no2").asDouble() : null);
-        d.setCo(n.has("co") && !n.get("co").isNull() ? n.get("co").asDouble() : null);
-        d.setO3(n.has("o3") && !n.get("o3").isNull() ? n.get("o3").asDouble() : null);
-        return d;
+    private Integer parseInt(JsonNode parent, String field) {
+        JsonNode node = parent.get(field);
+        if (node == null || node.isNull()) return null;
+        try {
+            return Integer.parseInt(node.asText());
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
