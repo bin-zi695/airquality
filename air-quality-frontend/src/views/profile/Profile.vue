@@ -52,23 +52,6 @@
         </el-form-item>
       </el-form>
     </el-card>
-
-    <el-card class="profile-card" shadow="never">
-      <template #header>
-        <span class="card-title"><span class="title-dot"></span>修改密码</span>
-      </template>
-      <el-form :model="pwdForm" label-width="80px" class="profile-form">
-        <el-form-item label="新密码">
-          <el-input v-model="pwdForm.newPassword" type="password" show-password size="large" placeholder="请输入新密码" />
-        </el-form-item>
-        <el-form-item label="确认密码">
-          <el-input v-model="pwdForm.confirmPassword" type="password" show-password size="large" placeholder="请再次输入新密码" />
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" size="large" round @click="changePassword" :disabled="!pwdForm.newPassword || pwdForm.newPassword !== pwdForm.confirmPassword">🔒 修改密码</el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
   </div>
 </template>
 
@@ -92,7 +75,6 @@ const form = reactive({
 })
 
 const avatarPreview = ref(userStore.userInfo?.avatar || '')
-const pwdForm = reactive({ newPassword: '', confirmPassword: '' })
 
 function beforeUpload(file) {
   const isImage = file.type.startsWith('image/')
@@ -114,7 +96,7 @@ async function handleUpload({ file }) {
   try {
     const token = localStorage.getItem('token')
     const res = await axios.post('/api/upload/avatar', formData, {
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+      headers: { Authorization: `Bearer ${token}` },
     })
     if (res.data.code === 200) {
       form.avatar = res.data.data.url
@@ -130,9 +112,12 @@ async function saveProfile() {
   saving.value = true
   try {
     await userApi.update(userStore.userId, { nickname: form.nickname, phone: form.phone, avatar: form.avatar })
-    userStore.userInfo.nickname = form.nickname
-    userStore.userInfo.phone = form.phone
-    userStore.userInfo.avatar = form.avatar
+    userStore.userInfo = {
+      ...userStore.userInfo,
+      nickname: form.nickname,
+      phone: form.phone,
+      avatar: form.avatar,
+    }
     localStorage.setItem('userInfo', JSON.stringify(userStore.userInfo))
     ElMessage.success('修改成功')
   } finally {
@@ -140,12 +125,6 @@ async function saveProfile() {
   }
 }
 
-async function changePassword() {
-  await userApi.changePassword(userStore.userId, pwdForm.newPassword)
-  ElMessage.success('密码修改成功')
-  pwdForm.newPassword = ''
-  pwdForm.confirmPassword = ''
-}
 </script>
 
 <style scoped>

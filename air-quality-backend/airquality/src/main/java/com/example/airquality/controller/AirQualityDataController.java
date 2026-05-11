@@ -1,14 +1,22 @@
 package com.example.airquality.controller;
 
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.example.airquality.common.Result;
 import com.example.airquality.entity.AirQualityData;
 import com.example.airquality.service.AirQualityDataService;
 import com.example.airquality.service.AqiLevelService;
-import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/air-data")
@@ -45,11 +53,32 @@ public class AirQualityDataController {
         return Result.success(airQualityDataService.getLatestByFavorites(userId));
     }
 
+    @GetMapping("/favorites-dates")
+    public Result<?> getFavoriteDates(@RequestParam Long userId) {
+        return Result.success(airQualityDataService.getFavoriteDates(userId));
+    }
+
+    @GetMapping("/favorites-by-date")
+    public Result<List<AirQualityData>> getFavoritesByDate(@RequestParam Long userId,
+                                                            @RequestParam LocalDate date) {
+        return Result.success(airQualityDataService.getFavoritesByDate(userId, date));
+    }
+
     @GetMapping("/trend")
     public Result<List<AirQualityData>> getTrend(@RequestParam Long cityId,
                                                   @RequestParam LocalDate startDate,
                                                   @RequestParam LocalDate endDate) {
         return Result.success(airQualityDataService.getTrend(cityId, startDate, endDate));
+    }
+
+    @GetMapping("/all-dates")
+    public Result<?> getAllDates() {
+        return Result.success(airQualityDataService.getAllDates());
+    }
+
+    @GetMapping("/all-by-date")
+    public Result<List<AirQualityData>> getAllByDate(@RequestParam LocalDate date) {
+        return Result.success(airQualityDataService.getAllByDate(date));
     }
 
     @GetMapping("/aqi-level/{aqi}")

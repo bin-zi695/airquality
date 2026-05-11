@@ -41,13 +41,6 @@ public class UserService {
         userMapper.update(user);
     }
 
-    public void changePassword(Long userId, String newPassword) {
-        User user = new User();
-        user.setId(userId);
-        user.setPassword(newPassword);
-        userMapper.update(user);
-    }
-
     public void updateStatus(Long id, Integer status) {
         userMapper.updateStatus(id, status);
     }

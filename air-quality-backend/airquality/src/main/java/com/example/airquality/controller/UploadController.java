@@ -1,15 +1,14 @@
 package com.example.airquality.controller;
 
 import com.example.airquality.common.Result;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -29,13 +28,15 @@ public class UploadController {
         }
         String newName = UUID.randomUUID().toString() + ext;
 
-        Path uploadDir = Paths.get("uploads", "avatars");
+        String userDir = System.getProperty("user.dir");
+        Path uploadDir = Paths.get(userDir, "uploads", "avatars");
         try {
             Files.createDirectories(uploadDir);
             Path targetPath = uploadDir.resolve(newName);
             file.transferTo(targetPath.toFile());
-            String url = "/uploads/avatars/" + newName;
-            return Result.success(Map.of("url", url));
+            Map<String, String> result = new HashMap<>();
+            result.put("url", "/uploads/avatars/" + newName);
+            return Result.success(result);
         } catch (IOException e) {
             return Result.error(500, "上传失败: " + e.getMessage());
         }

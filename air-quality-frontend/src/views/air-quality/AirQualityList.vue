@@ -36,7 +36,7 @@
         </el-table-column>
         <el-table-column prop="aqi" label="AQI" width="80">
           <template #default="{ row }">
-            <span class="aqi-badge-sm" :style="{ background: getAqiColor(row.aqi) }">{{ row.aqi }}</span>
+            <span class="aqi-badge-sm" :style="{ background: getAqiColor(row.aqi) || '#999' }">{{ row.aqi }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="pm25" label="PM2.5" width="80" />
@@ -75,11 +75,18 @@ const cities = ref([])
 const cityMap = ref({})
 const query = reactive({ cityId: null, dateRange: null })
 
-const aqiLevelMap = [[0,50,'#00E400'],[51,100,'#FFFF00'],[101,150,'#FF7E00'],[151,200,'#FF0000'],[201,300,'#99004C'],[301,9999,'#7E0023']]
+const aqiLevelMap = [
+  [0, 50, '优', '#00E400'],
+  [51, 100, '良', '#F5C842'],
+  [101, 150, '轻度污染', '#FF7E00'],
+  [151, 200, '中度污染', '#FF0000'],
+  [201, 300, '重度污染', '#99004C'],
+  [301, 9999, '严重污染', '#7E0023'],
+]
 
 function getAqiColor(aqi) {
-  if (!aqi) return '#999'
-  for (const [min,max,,color] of aqiLevelMap) { if (aqi>=min&&aqi<=max) return color }
+  if (aqi == null) return '#999'
+  for (const [min, max, , color] of aqiLevelMap) { if (aqi >= min && aqi <= max) return color }
   return '#999'
 }
 
@@ -109,6 +116,7 @@ onMounted(async () => {
   const res = await cityApi.listAll()
   cities.value = res.data || []
   cities.value.forEach(c => { cityMap.value[c.id] = c.name })
+  fetchData()
 })
 </script>
 

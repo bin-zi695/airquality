@@ -9,6 +9,7 @@ public class City {
     private Double latitude;
     private Double longitude;
     private String category;
+    private String locationId;
     private Integer status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -30,6 +31,9 @@ public class City {
 
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
+
+    public String getLocationId() { return locationId; }
+    public void setLocationId(String locationId) { this.locationId = locationId; }
 
     public Integer getStatus() { return status; }
     public void setStatus(Integer status) { this.status = status; }

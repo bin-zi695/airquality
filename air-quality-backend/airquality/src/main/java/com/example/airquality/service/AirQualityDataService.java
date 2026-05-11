@@ -1,11 +1,12 @@
 package com.example.airquality.service;
 
-import com.example.airquality.entity.AirQualityData;
-import com.example.airquality.mapper.AirQualityDataMapper;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.example.airquality.entity.AirQualityData;
+import com.example.airquality.mapper.AirQualityDataMapper;
 
 @Service
 public class AirQualityDataService {
@@ -30,6 +31,22 @@ public class AirQualityDataService {
 
     public List<AirQualityData> getLatestByFavorites(Long userId) {
         return airQualityDataMapper.selectLatestByFavorites(userId);
+    }
+
+    public List<LocalDate> getFavoriteDates(Long userId) {
+        return airQualityDataMapper.selectFavoriteDates(userId);
+    }
+
+    public List<AirQualityData> getFavoritesByDate(Long userId, LocalDate date) {
+        return airQualityDataMapper.selectFavoritesByDate(userId, date);
+    }
+
+    public List<LocalDate> getAllDates() {
+        return airQualityDataMapper.selectAllDates();
+    }
+
+    public List<AirQualityData> getAllByDate(LocalDate date) {
+        return airQualityDataMapper.selectAllByDate(date);
     }
 
     public AirQualityData getLatestByCity(Long cityId) {

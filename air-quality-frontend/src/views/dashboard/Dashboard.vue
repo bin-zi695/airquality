@@ -32,11 +32,16 @@
       <template #header>
         <div class="section-header">
           <span class="section-title">
-            <span class="title-dot"></span>我的收藏城市 · 最新空气质量
+            <span class="title-dot"></span>我的收藏城市
           </span>
-          <el-button type="primary" size="small" round @click="$router.push('/favorites')">
-            管理收藏 →
-          </el-button>
+          <div class="header-right-controls">
+            <el-select v-model="selectedDate" placeholder="选择日期" size="small" style="width:150px" @change="loadByDate" v-if="hasFavorites && dates.length">
+              <el-option v-for="d in dates" :key="d" :label="d" :value="d" />
+            </el-select>
+            <el-button type="primary" size="small" round @click="$router.push('/favorites')">
+              管理收藏 →
+            </el-button>
+          </div>
         </div>
       </template>
 
@@ -149,6 +154,8 @@ const statsCards = computed(() => [
 const favoriteCitiesCount = computed(() => favoriteIds.value.length)
 
 const favoriteIds = ref([])
+const dates = ref([])
+const selectedDate = ref('')
 
 const aqiLevelMap = [
   [0, 50, '优', '#00E400'],
@@ -179,6 +186,7 @@ onMounted(async () => {
     const cities = cityRes.data || []
     cities.forEach(c => { cityMap.value[c.id] = c.name })
     const userId = userStore.userId
+
     const countRes = await favoriteApi.count(userId)
     const count = countRes.data
     hasFavorites.value = count > 0
@@ -186,10 +194,21 @@ onMounted(async () => {
     const idsRes = await favoriteApi.getCityIds(userId)
     favoriteIds.value = idsRes.data || []
 
+    if (count > 0) {
+      const datesRes = await airDataApi.getFavoriteDates(userId)
+      dates.value = (datesRes.data || []).map(d => typeof d === 'string' ? d : d)
+      if (dates.value.length) {
+        selectedDate.value = dates.value[0]
+      }
+    }
+
     let airData = []
     if (count === 0) {
       const latestRes = await airDataApi.getLatestByCity(1)
       if (latestRes.data) airData = [latestRes.data]
+    } else if (selectedDate.value) {
+      const favRes = await airDataApi.getFavoritesByDate(userId, selectedDate.value)
+      airData = favRes.data || []
     } else {
       const favRes = await airDataApi.getLatestByFavorites(userId)
       airData = favRes.data || []
@@ -213,6 +232,17 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
+async function loadByDate() {
+  if (!selectedDate.value) return
+  loading.value = true
+  try {
+    const favRes = await airDataApi.getFavoritesByDate(userStore.userId, selectedDate.value)
+    favoriteData.value = favRes.data || []
+  } finally {
+    loading.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -279,6 +309,7 @@ onMounted(async () => {
   box-shadow: 0 2px 12px rgba(0,0,0,0.04);
 }
 .section-header { display: flex; justify-content: space-between; align-items: center; }
+.header-right-controls { display: flex; align-items: center; gap: 10px; }
 .section-title { font-size: 16px; font-weight: 600; color: #1a1a2e; display: flex; align-items: center; gap: 8px; }
 .title-dot {
   width: 8px; height: 8px;

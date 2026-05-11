@@ -36,12 +36,6 @@ public class UserController {
         return Result.success();
     }
 
-    @PutMapping("/{id}/password")
-    public Result<Void> changePassword(@PathVariable Long id, @RequestParam String newPassword) {
-        userService.changePassword(id, newPassword);
-        return Result.success();
-    }
-
     @PutMapping("/{id}/status")
     public Result<Void> updateStatus(@PathVariable Long id, @RequestParam Integer status) {
         userService.updateStatus(id, status);

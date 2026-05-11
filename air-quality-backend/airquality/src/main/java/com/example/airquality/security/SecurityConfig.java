@@ -38,6 +38,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/cities", "/api/cities/all", "/api/cities/**").permitAll()
                 .requestMatchers("/api/air-data", "/api/air-data/**").permitAll()
                 .requestMatchers("/api/alert-thresholds/enabled").permitAll()
+                .requestMatchers("/api/upload/**").permitAll()
+                .requestMatchers("/api/admin/**").authenticated()
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().permitAll()
             )

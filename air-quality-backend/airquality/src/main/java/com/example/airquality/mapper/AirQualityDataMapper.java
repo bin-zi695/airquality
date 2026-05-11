@@ -33,13 +33,23 @@ public interface AirQualityDataMapper {
                                      @Param("startDate") LocalDate startDate,
                                      @Param("endDate") LocalDate endDate);
 
-    @Select("<script>" +
-            "SELECT a.* FROM air_quality_data a " +
+    @Select("SELECT a.* FROM air_quality_data a " +
             "INNER JOIN user_favorite uf ON a.city_id = uf.city_id " +
-            "WHERE uf.user_id = #{userId} AND a.date = " +
-            "(SELECT MAX(b.date) FROM air_quality_data b WHERE b.city_id = a.city_id)" +
-            "</script>")
+            "WHERE uf.user_id = #{userId} " +
+            "AND a.id IN (SELECT MAX(b.id) FROM air_quality_data b GROUP BY b.city_id) " +
+            "ORDER BY a.city_id ASC")
     List<AirQualityData> selectLatestByFavorites(Long userId);
+
+    @Select("SELECT DISTINCT a.date FROM air_quality_data a " +
+            "INNER JOIN user_favorite uf ON a.city_id = uf.city_id " +
+            "WHERE uf.user_id = #{userId} ORDER BY a.date DESC")
+    List<java.time.LocalDate> selectFavoriteDates(Long userId);
+
+    @Select("SELECT a.* FROM air_quality_data a " +
+            "INNER JOIN user_favorite uf ON a.city_id = uf.city_id " +
+            "WHERE uf.user_id = #{userId} AND a.date = #{date} " +
+            "ORDER BY a.city_id ASC")
+    List<AirQualityData> selectFavoritesByDate(@Param("userId") Long userId, @Param("date") LocalDate date);
 
     @Select("SELECT * FROM air_quality_data WHERE date = (SELECT MAX(date) FROM air_quality_data WHERE city_id = #{cityId}) AND city_id = #{cityId}")
     AirQualityData selectLatestByCity(Long cityId);
@@ -51,6 +61,13 @@ public interface AirQualityDataMapper {
 
     @Select("SELECT * FROM air_quality_data WHERE city_id = #{cityId} ORDER BY id ASC")
     List<AirQualityData> selectByCity(@Param("cityId") Long cityId);
+
+    @Select("SELECT DISTINCT date FROM air_quality_data ORDER BY date DESC")
+    List<java.time.LocalDate> selectAllDates();
+
+    @Select("SELECT * FROM air_quality_data " +
+            "WHERE date = #{date} AND aqi IS NOT NULL ORDER BY city_id ASC")
+    List<AirQualityData> selectAllByDate(@Param("date") LocalDate date);
 
     @Insert("INSERT INTO air_quality_data (city_id, date, aqi, pm25, pm10, so2, no2, co, o3, " +
             "temperature, humidity, wind_direction, wind_speed, weather) VALUES " +

@@ -11,7 +11,7 @@
         </el-badge>
         <el-dropdown @command="handleCommand" trigger="click">
           <span class="user-info">
-            <el-avatar :size="34" :icon="UserFilled" :src="userStore.userInfo?.avatar" />
+            <el-avatar :size="34" :key="userStore.userInfo?.avatar" :icon="UserFilled" :src="userStore.userInfo?.avatar" />
             <span class="username">{{ userStore.userInfo?.username }}</span>
             <el-icon class="arrow-icon"><ArrowDown /></el-icon>
           </span>
@@ -36,7 +36,7 @@
       <el-aside width="230px" class="layout-aside">
         <div class="aside-brand">
           <div class="aside-avatar">
-            <el-avatar :size="44" :icon="UserFilled" :src="userStore.userInfo?.avatar" v-if="userStore.isLoggedIn" />
+            <el-avatar :size="44" :key="'side-' + userStore.userInfo?.avatar" :icon="UserFilled" :src="userStore.userInfo?.avatar" v-if="userStore.isLoggedIn" />
             <el-avatar :size="44" icon="UserFilled" v-else />
           </div>
           <div class="aside-user" v-if="userStore.isLoggedIn">

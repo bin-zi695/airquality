@@ -9,7 +9,6 @@ export const userApi = {
   getById(id) { return request.get(`/users/${id}`) },
   list(params) { return request.get('/users', { params }) },
   update(id, data) { return request.put(`/users/${id}`, data) },
-  changePassword(id, password) { return request.put(`/users/${id}/password`, null, { params: { newPassword: password } }) },
   updateStatus(id, status) { return request.put(`/users/${id}/status`, null, { params: { status } }) },
   delete(id) { return request.delete(`/users/${id}`) },
 }
@@ -28,6 +27,10 @@ export const airDataApi = {
   list(params) { return request.get('/air-data', { params }) },
   getLatestByCity(cityId) { return request.get('/air-data/latest', { params: { cityId } }) },
   getLatestByFavorites(userId) { return request.get('/air-data/favorites-latest', { params: { userId } }) },
+  getFavoriteDates(userId) { return request.get('/air-data/favorites-dates', { params: { userId } }) },
+  getFavoritesByDate(userId, date) { return request.get('/air-data/favorites-by-date', { params: { userId, date } }) },
+  getAllDates() { return request.get('/air-data/all-dates') },
+  getAllByDate(date) { return request.get('/air-data/all-by-date', { params: { date } }) },
   getTrend(params) { return request.get('/air-data/trend', { params }) },
   getAqiLevel(aqi) { return request.get(`/air-data/aqi-level/${aqi}`) },
   save(data) { return request.post('/air-data', data) },
