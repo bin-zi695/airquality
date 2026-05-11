@@ -87,16 +87,16 @@
                 <div class="p-val">{{ formatNum(item.pm10) }}</div>
               </div>
               <div class="p-item">
-                <div class="p-label">O₃</div>
+                <div class="p-label">O3</div>
                 <div class="p-val">{{ formatNum(item.o3) }}</div>
               </div>
               <div class="p-item">
-                <div class="p-label">最高气温</div>
+                <div class="p-label">气温</div>
                 <div class="p-val">{{ formatTemp(item.temperature) }}</div>
               </div>
               <div class="p-item">
                 <div class="p-label">天气</div>
-                <div class="p-val">{{ item.weather || '-' }}</div>
+                <div class="p-val nowrap-text">{{ item.weather || '-' }}</div>
               </div>
             </div>
             <div class="aqi-date">📅 {{ item.date }}</div>
@@ -348,10 +348,17 @@ async function loadByDate() {
 .aqi-big { font-size: 48px; font-weight: 800; text-align: center; line-height: 1.1; letter-spacing: -1px; }
 .aqi-unit { text-align: center; font-size: 11px; color: #aaa; margin-bottom: 14px; }
 
-.pollutants { display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #f0f0f0; }
-.p-item { text-align: center; }
-.p-label { font-size: 10px; color: #bbb; margin-bottom: 4px; }
-.p-val { font-size: 15px; font-weight: 700; color: #333; }
+.pollutants {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  padding: 10px 0;
+  border-top: 1px solid #f0f0f0;
+}
+.p-item { text-align: center; min-width: 0; }
+.p-label { font-size: 11px; color: #bbb; margin-bottom: 4px; white-space: nowrap; }
+.p-val { font-size: 14px; font-weight: 700; color: #333; }
+.nowrap-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .aqi-date { text-align: center; font-size: 11px; color: #bbb; margin-top: 4px; }
 

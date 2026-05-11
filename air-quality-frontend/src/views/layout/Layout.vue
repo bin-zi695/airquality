@@ -89,11 +89,6 @@
               <el-menu-item index="/admin/air-data">📋 数据管理</el-menu-item>
               <el-menu-item index="/admin/alert">⚙️ 预警配置</el-menu-item>
               <el-menu-item index="/admin/articles">📝 资讯管理</el-menu-item>
-              <el-sub-menu index="admin-logs">
-                <template #title>📜 日志管理</template>
-                <el-menu-item index="/admin/logs/operation">操作日志</el-menu-item>
-                <el-menu-item index="/admin/logs/access">访问日志</el-menu-item>
-              </el-sub-menu>
             </el-sub-menu>
           </template>
         </el-menu>

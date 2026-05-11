@@ -56,14 +56,6 @@ export const alertApi = {
   delete(id) { return request.delete(`/alert-thresholds/${id}`) },
 }
 
-export const operationLogApi = {
-  list(params) { return request.get('/operation-logs', { params }) },
-}
-
-export const accessLogApi = {
-  list(params) { return request.get('/access-logs', { params }) },
-}
-
 export const articleApi = {
   listPublished() { return request.get('/articles/published') },
   list(params) { return request.get('/articles', { params }) },

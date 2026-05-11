@@ -26,15 +26,15 @@ public class SyncController {
         this.cityMapper = cityMapper;
     }
 
-    @GetMapping("/sync-now")
-    public Result<?> syncNowGet() {
-        log.info("=== GET 手动触发数据同步 ===");
-        return doSync();
-    }
-
     @PostMapping("/sync-now")
     public Result<?> syncNowPost() {
         log.info("=== POST 手动触发数据同步 ===");
+        return doSync();
+    }
+
+    @GetMapping("/sync-now")
+    public Result<?> syncNowGet() {
+        log.info("=== GET 手动触发数据同步 ===");
         return doSync();
     }
 

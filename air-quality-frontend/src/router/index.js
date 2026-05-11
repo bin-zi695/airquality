@@ -80,18 +80,6 @@ const routes = [
         meta: { title: '预警配置', requiresAdmin: true },
       },
       {
-        path: 'admin/logs/operation',
-        name: 'AdminOperationLogs',
-        component: () => import('@/views/admin/OperationLogs.vue'),
-        meta: { title: '操作日志', requiresAdmin: true },
-      },
-      {
-        path: 'admin/logs/access',
-        name: 'AdminAccessLogs',
-        component: () => import('@/views/admin/AccessLogs.vue'),
-        meta: { title: '访问日志', requiresAdmin: true },
-      },
-      {
         path: 'admin/articles',
         name: 'AdminArticles',
         component: () => import('@/views/admin/Articles.vue'),

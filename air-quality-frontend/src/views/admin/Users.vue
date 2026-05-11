@@ -4,10 +4,10 @@
       <el-form :inline="true" :model="query">
         <el-form-item label="搜索"><el-input v-model="query.username" placeholder="搜索用户名" clearable /></el-form-item>
         <el-form-item label="角色">
-          <el-select v-model="query.role" clearable><el-option label="用户" value="user" /><el-option label="管理员" value="admin" /></el-select>
+          <el-select v-model="query.role" clearable style="width:100px"><el-option label="用户" value="user" /><el-option label="管理员" value="admin" /></el-select>
         </el-form-item>
         <el-form-item label="状态">
-          <el-select v-model="query.status" clearable><el-option label="启用" :value="1" /><el-option label="禁用" :value="0" /></el-select>
+          <el-select v-model="query.status" clearable style="width:100px"><el-option label="启用" :value="1" /><el-option label="禁用" :value="0" /></el-select>
         </el-form-item>
         <el-form-item><el-button type="primary" @click="fetchData">查询</el-button></el-form-item>
       </el-form>

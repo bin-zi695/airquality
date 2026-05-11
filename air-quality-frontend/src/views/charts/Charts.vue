@@ -10,8 +10,7 @@
         <el-form-item label="时间范围">
           <el-select v-model="range" size="large" style="min-width:120px" @change="loadTrendAndPie">
             <el-option label="近7天" value="7" />
-            <el-option label="近30天" value="30" />
-            <el-option label="近90天" value="90" />
+            <el-option label="近15天" value="15" />
           </el-select>
         </el-form-item>
         <el-form-item label="对比日期">

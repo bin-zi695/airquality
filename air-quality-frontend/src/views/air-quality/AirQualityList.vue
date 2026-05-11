@@ -9,7 +9,8 @@
         </el-form-item>
         <el-form-item label="日期范围">
           <el-date-picker v-model="query.dateRange" type="daterange" range-separator="至"
-            start-placeholder="开始日期" end-placeholder="结束日期" value-format="YYYY-MM-DD" size="large" />
+            start-placeholder="开始日期" end-placeholder="结束日期" value-format="YYYY-MM-DD" size="large"
+            :disabled-date="disabledDate" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" size="large" round @click="fetchData">
@@ -34,9 +35,9 @@
             <span class="city-label">🏙 {{ getCityName(row.cityId) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="aqi" label="AQI" width="80">
+        <el-table-column label="AQI" width="80">
           <template #default="{ row }">
-            <span class="aqi-badge-sm" :style="{ background: getAqiColor(row.aqi) || '#999' }">{{ row.aqi }}</span>
+            <span class="aqi-badge-sm" :style="{ background: getAqiColor(row.aqi) }">{{ row.aqi ?? '-' }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="pm25" label="PM2.5" width="80" />
@@ -91,6 +92,12 @@ function getAqiColor(aqi) {
 }
 
 function getCityName(id) { return cityMap.value[id] || '' }
+
+function disabledDate(time) {
+  const d = new Date()
+  d.setDate(d.getDate() - 15)
+  return time.getTime() < d.getTime() || time.getTime() > Date.now() + 86400000
+}
 
 async function fetchData() {
   loading.value = true

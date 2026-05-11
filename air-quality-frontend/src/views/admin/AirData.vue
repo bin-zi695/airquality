@@ -16,7 +16,8 @@
         </el-form-item>
         <el-form-item label="日期范围">
           <el-date-picker v-model="query.dateRange" type="daterange" range-separator="至"
-            start-placeholder="开始" end-placeholder="结束" value-format="YYYY-MM-DD" />
+            start-placeholder="开始" end-placeholder="结束" value-format="YYYY-MM-DD"
+            :disabled-date="disabledDate" />
         </el-form-item>
         <el-form-item><el-button type="primary" @click="fetchData">查询</el-button></el-form-item>
       </el-form>
@@ -82,6 +83,12 @@ const form = reactive({ cityId: null, date: null, aqi: null, pm25: null, pm10: n
 
 function getCityName(id) { return cityMap.value[id] || '' }
 
+function disabledDate(time) {
+  const d = new Date()
+  d.setDate(d.getDate() - 15)
+  return time.getTime() < d.getTime() || time.getTime() > Date.now() + 86400000
+}
+
 async function fetchData() {
   loading.value = true
   try {
@@ -123,10 +130,12 @@ async function deleteData(row) {
 async function triggerSync() {
   syncing.value = true
   try {
-    await axios.post('/api/admin/sync-now')
-    ElMessage.success('数据采集已启动，稍后刷新页面查看')
+    const res = await axios.post('/api/admin/sync-now')
+    const d = res.data?.data
+    ElMessage.success(`采集完成: 成功${d?.success || 0} 失败${d?.fail || 0}`)
+    fetchData()
   } catch (e) {
-    ElMessage.error('采集失败')
+    ElMessage.error('采集请求失败')
   } finally { syncing.value = false }
 }
 

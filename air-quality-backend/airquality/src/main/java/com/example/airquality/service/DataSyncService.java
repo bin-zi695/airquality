@@ -50,6 +50,15 @@ public class DataSyncService {
             }
         }
         log.info("昨日同步完成: 成功{} 失败{} (共{}城市)", success, fail, cities.size());
+        cleanupOldData();
+    }
+
+    private void cleanupOldData() {
+        LocalDate cutoff = LocalDate.now().minusDays(15);
+        int deleted = airQualityDataMapper.deleteOlderThan(cutoff);
+        if (deleted > 0) {
+            log.info("清理{}天前旧数据: {}条", cutoff, deleted);
+        }
     }
 
     private void syncDate(LocalDate date) {
@@ -66,6 +75,7 @@ public class DataSyncService {
             }
         }
         log.info("{}同步完成: 成功{} 失败{} (共{}城市)", date, success, fail, cities.size());
+        cleanupOldData();
     }
 
     public boolean syncCityNow(City city, LocalDate date) {

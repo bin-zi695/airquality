@@ -81,45 +81,6 @@ CREATE TABLE `alert_threshold` (
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='预警阈值配置表';
 
--- 操作日志表
-DROP TABLE IF EXISTS `operation_log`;
-CREATE TABLE `operation_log` (
-    `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
-    `user_id` BIGINT,
-    `username` VARCHAR(50),
-    `operation_type` VARCHAR(50) NOT NULL COMMENT 'INSERT/UPDATE/DELETE/LOGIN',
-    `module` VARCHAR(50) COMMENT '操作模块',
-    `description` VARCHAR(500) COMMENT '操作描述',
-    `request_method` VARCHAR(10),
-    `request_url` VARCHAR(255),
-    `request_params` TEXT,
-    `ip_address` VARCHAR(50),
-    `status` TINYINT DEFAULT 1 COMMENT '1成功 0失败',
-    `error_msg` VARCHAR(500),
-    `execution_time` BIGINT COMMENT '执行耗时(ms)',
-    `operation_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    INDEX `idx_operation_time` (`operation_time`),
-    INDEX `idx_user_id` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='操作日志表';
-
--- 访问日志表
-DROP TABLE IF EXISTS `access_log`;
-CREATE TABLE `access_log` (
-    `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
-    `user_id` BIGINT,
-    `username` VARCHAR(50),
-    `ip_address` VARCHAR(50),
-    `request_method` VARCHAR(10),
-    `request_url` VARCHAR(255),
-    `request_params` TEXT,
-    `response_status` INT,
-    `execution_time` BIGINT COMMENT '请求耗时(ms)',
-    `user_agent` VARCHAR(500),
-    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    INDEX `idx_created_at` (`created_at`),
-    INDEX `idx_request_url` (`request_url`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='访问日志表';
-
 -- 系统配置表
 DROP TABLE IF EXISTS `system_config`;
 CREATE TABLE `system_config` (

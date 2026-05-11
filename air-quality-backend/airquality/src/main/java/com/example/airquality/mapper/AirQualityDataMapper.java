@@ -27,7 +27,7 @@ public interface AirQualityDataMapper {
             "<if test='cityId != null'> AND a.city_id = #{cityId}</if>" +
             "<if test='startDate != null'> AND a.date &gt;= #{startDate}</if>" +
             "<if test='endDate != null'> AND a.date &lt;= #{endDate}</if>" +
-            " ORDER BY a.id ASC" +
+            " ORDER BY a.date DESC, a.id DESC" +
             "</script>")
     List<AirQualityData> selectList(@Param("cityId") Long cityId,
                                      @Param("startDate") LocalDate startDate,
@@ -59,7 +59,7 @@ public interface AirQualityDataMapper {
                                       @Param("startDate") LocalDate startDate,
                                       @Param("endDate") LocalDate endDate);
 
-    @Select("SELECT * FROM air_quality_data WHERE city_id = #{cityId} ORDER BY id ASC")
+    @Select("SELECT * FROM air_quality_data WHERE city_id = #{cityId} ORDER BY date DESC")
     List<AirQualityData> selectByCity(@Param("cityId") Long cityId);
 
     @Select("SELECT DISTINCT date FROM air_quality_data ORDER BY date DESC")
@@ -70,16 +70,17 @@ public interface AirQualityDataMapper {
     List<AirQualityData> selectAllByDate(@Param("date") LocalDate date);
 
     @Insert("INSERT INTO air_quality_data (city_id, date, aqi, pm25, pm10, so2, no2, co, o3, " +
-            "temperature, humidity, wind_direction, wind_speed, weather) VALUES " +
+            "temperature, humidity, wind_direction, wind_speed, weather, created_at) VALUES " +
             "(#{cityId}, #{date}, #{aqi}, #{pm25}, #{pm10}, #{so2}, #{no2}, #{co}, #{o3}, " +
-            "#{temperature}, #{humidity}, #{windDirection}, #{windSpeed}, #{weather})")
+            "#{temperature}, #{humidity}, #{windDirection}, #{windSpeed}, #{weather}, NOW())")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(AirQualityData data);
 
     @Update("UPDATE air_quality_data SET aqi = #{aqi}, pm25 = #{pm25}, pm10 = #{pm10}, " +
             "so2 = #{so2}, no2 = #{no2}, co = #{co}, o3 = #{o3}, " +
             "temperature = #{temperature}, humidity = #{humidity}, " +
-            "wind_direction = #{windDirection}, wind_speed = #{windSpeed}, weather = #{weather} " +
+            "wind_direction = #{windDirection}, wind_speed = #{windSpeed}, weather = #{weather}, " +
+            "created_at = NOW() " +
             "WHERE id = #{id}")
     int update(AirQualityData data);
 
@@ -91,16 +92,20 @@ public interface AirQualityDataMapper {
 
     @Insert("<script>" +
             "INSERT INTO air_quality_data (city_id, date, aqi, pm25, pm10, so2, no2, co, o3, " +
-            "temperature, humidity, wind_direction, wind_speed, weather) VALUES " +
+            "temperature, humidity, wind_direction, wind_speed, weather, created_at) VALUES " +
             "<foreach collection='list' item='item' separator=','>" +
             "(#{item.cityId}, #{item.date}, #{item.aqi}, #{item.pm25}, #{item.pm10}, " +
             "#{item.so2}, #{item.no2}, #{item.co}, #{item.o3}, #{item.temperature}, " +
-            "#{item.humidity}, #{item.windDirection}, #{item.windSpeed}, #{item.weather})" +
+            "#{item.humidity}, #{item.windDirection}, #{item.windSpeed}, #{item.weather}, NOW())" +
             "</foreach>" +
             " ON DUPLICATE KEY UPDATE aqi = VALUES(aqi), pm25 = VALUES(pm25), pm10 = VALUES(pm10), " +
             "so2 = VALUES(so2), no2 = VALUES(no2), co = VALUES(co), o3 = VALUES(o3), " +
             "temperature = VALUES(temperature), humidity = VALUES(humidity), " +
-            "wind_direction = VALUES(wind_direction), wind_speed = VALUES(wind_speed), weather = VALUES(weather)" +
+            "wind_direction = VALUES(wind_direction), wind_speed = VALUES(wind_speed), weather = VALUES(weather), " +
+            "created_at = NOW()" +
             "</script>")
     int batchInsert(List<AirQualityData> list);
+
+    @Delete("DELETE FROM air_quality_data WHERE date < #{date}")
+    int deleteOlderThan(LocalDate date);
 }
