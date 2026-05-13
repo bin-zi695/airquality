@@ -81,7 +81,7 @@ air-quality-system/
 │               │       ├── HeavyPollutionStrategy.java  # 重度污染 (201-300)
 │               │       └── SeverePollutionStrategy.java # 严重污染 (>300)
 │               │
-│               ├── controller/                 # 📦 REST API 控制器（9个）
+│               ├── controller/                 # 📦 REST API 控制器（10个）
 │               │   ├── AuthController.java     #   登录/注册（JWT 签发）
 │               │   ├── UserController.java     #   用户管理（管理员）
 │               │   ├── CityController.java     #   城市管理（管理员）
@@ -92,6 +92,10 @@ air-quality-system/
 │               │   ├── SystemConfigController.java    # 系统配置
 │               │   ├── UploadController.java          # 文件上传
 │               │   └── AirQualityArticleController.java # 科普资讯管理
+│               │
+│               ├── config/                      # ⚙ 应用配置
+│               │   ├── DataInitConfig.java      #   启动时自动初始化管理员账号
+│               │   └── WebMvcConfig.java        #   静态资源映射（上传文件访问）
 │               │
 │               ├── aop/                         # ★ Spring AOP 切面
 │               │   └── AlertDetectionAspect.java #   拦截数据入库自动检测 AQI 预警
@@ -177,6 +181,12 @@ air-quality-system/
 | GET | `/api/air-data/all-by-date` | 按日期获取所有城市数据 | 公开 |
 | GET | `/api/air-data/aqi-level/{aqi}` | 获取 AQI 等级判定结果 | 公开 |
 | GET | `/api/articles/published` | 获取已发布资讯 | 公开 |
+| GET | `/api/config/{key}` | 获取系统配置项 | 公开 |
+| GET | `/api/favorites/cities` | 获取收藏城市ID列表 | 登录 |
+| GET | `/api/favorites/count` | 获取收藏数量 | 登录 |
+| GET | `/api/favorites/check` | 检查是否已收藏 | 登录 |
+| POST | `/api/favorites` | 添加收藏 | 登录 |
+| DELETE | `/api/favorites` | 取消收藏 | 登录 |
 | ★ POST | `/api/admin/sync-now` | 手动触发数据采集 | 公开 |
 | ★ GET | `/api/admin/sync-history?days=N` | 回填最近 N 天历史数据 | 公开 |
 | GET/POST/PUT/DELETE | `/api/users/**` | 用户管理 | 管理员 |
@@ -274,9 +284,15 @@ npm install
 npm run dev                   # 端口 3000（已代理 /api 到 8080）
 ```
 
-### 5. 设置管理员
+### 5. 管理员账号
 
-注册后用 MySQL 将用户角色改为 admin：
+启动后端时系统会自动初始化管理员账号（通过 `DataInitConfig`）：
+
+- 邮箱: `admin@air.com`
+- 用户名: `admin`
+- 密码: `admin123`
+
+如需手动设置，注册后用 MySQL 将用户角色改为 admin：
 
 ```sql
 UPDATE air_quality_db.user SET role = 'admin' WHERE username = '你的用户名';

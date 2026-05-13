@@ -32,7 +32,9 @@ public class UserService {
     }
 
     public void register(User user) {
-        user.setRole("user");
+        if (user.getRole() == null || user.getRole().isBlank()) {
+            user.setRole("user");
+        }
         user.setStatus(1);
         if (user.getNickname() == null || user.getNickname().isBlank()) {
             user.setNickname(user.getUsername());
