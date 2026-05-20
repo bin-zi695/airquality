@@ -1,10 +1,15 @@
 <template>
   <div class="air-quality-list">
-    <el-card class="filter-card" shadow="never">
+    <el-card class="filter-card animate__animated animate__fadeInUp" shadow="never">
       <el-form :inline="true" :model="query" class="filter-form">
+        <el-form-item label="省份">
+          <el-select v-model="filterProvince" placeholder="全部省份" clearable size="large" style="min-width:130px" @change="query.cityId = null">
+            <el-option v-for="p in provinces" :key="p" :label="p" :value="p" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="城市">
-          <el-select v-model="query.cityId" placeholder="选择城市" clearable size="large" style="min-width:180px">
-            <el-option v-for="c in cities" :key="c.id" :label="c.name" :value="c.id" />
+          <el-select v-model="query.cityId" placeholder="选择城市" clearable filterable size="large" style="min-width:180px">
+            <el-option v-for="c in filteredCities" :key="c.id" :label="`${c.name} · ${c.province || ''}`" :value="c.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="日期范围">
@@ -21,7 +26,7 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never" v-loading="loading">
+    <el-card class="table-card animate__animated animate__fadeInUp" shadow="never" v-loading="loading" style="animation-delay:0.1s">
       <template #header>
         <div class="card-title">
           <span class="title-dot"></span>查询结果
@@ -67,7 +72,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { airDataApi, cityApi } from '@/api'
 
 const loading = ref(false)
@@ -75,6 +80,16 @@ const tableData = ref([])
 const cities = ref([])
 const cityMap = ref({})
 const query = reactive({ cityId: null, dateRange: null })
+const filterProvince = ref('')
+
+const provinces = computed(() => {
+  const set = new Set(cities.value.map(c => c.province).filter(Boolean))
+  return [...set].sort()
+})
+const filteredCities = computed(() => {
+  if (!filterProvince.value) return cities.value
+  return cities.value.filter(c => c.province === filterProvince.value)
+})
 
 const aqiLevelMap = [
   [0, 50, '优', '#00E400'],
@@ -128,8 +143,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.air-quality-list { }
-
 .filter-card {
   border-radius: 14px;
   border: none;
@@ -157,11 +170,11 @@ onMounted(async () => {
 .title-dot {
   width: 8px; height: 8px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #3b82f6, #06b6d4);
   display: inline-block;
 }
 
-.city-label { font-weight: 500; }
+.city-label { font-weight: 500; display: flex; align-items: center; }
 
 .aqi-badge-sm {
   display: inline-flex; align-items: center; justify-content: center;
@@ -171,8 +184,15 @@ onMounted(async () => {
 
 .empty-hint { padding: 40px 0; }
 
-.data-table :deep(th) {
-  background: #fafbfc;
-  font-weight: 600;
+.data-table {
+  border-radius: 12px;
+}
+.data-table :deep(th.el-table__cell) {
+  background: #f8f9fc !important;
+  font-weight: 600 !important;
+  color: #1a1a2e !important;
+}
+.data-table :deep(.el-table__row:hover) {
+  background: #f0f5ff !important;
 }
 </style>

@@ -3,7 +3,9 @@ package com.example.airquality.controller;
 import com.example.airquality.common.Result;
 import com.example.airquality.entity.User;
 import com.example.airquality.security.JwtUtil;
+import com.example.airquality.service.OperationLogService;
 import com.example.airquality.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,11 +19,24 @@ public class AuthController {
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final OperationLogService operationLogService;
+    private final HttpServletRequest request;
 
-    public AuthController(UserService userService, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+    public AuthController(UserService userService, PasswordEncoder passwordEncoder,
+                          JwtUtil jwtUtil, OperationLogService operationLogService,
+                          HttpServletRequest request) {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
+        this.operationLogService = operationLogService;
+        this.request = request;
+    }
+
+    private String getClientIp() {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isBlank()) ip = request.getRemoteAddr();
+        if (ip != null && ip.contains(",")) ip = ip.split(",")[0].trim();
+        return ip;
     }
 
     @PostMapping("/register")
@@ -41,6 +56,10 @@ public class AuthController {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setNickname(username);
         userService.register(user);
+
+        operationLogService.log(user.getId(), username, "register", "用户注册",
+                "新用户注册: " + username + " (" + email + ")", getClientIp());
+
         return Result.success();
     }
 
@@ -69,7 +88,6 @@ public class AuthController {
         result.put("email", email);
         result.put("nickname", user.getNickname());
         result.put("role", user.getRole());
-        result.put("avatar", user.getAvatar());
         return Result.success(result);
     }
 }

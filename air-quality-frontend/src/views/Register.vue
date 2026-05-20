@@ -2,7 +2,7 @@
   <div class="register-page">
     <div class="register-container">
       <div class="register-left">
-        <div class="left-content">
+        <div class="left-content animate__animated animate__fadeInLeft">
           <div class="brand-icon">
             <el-icon :size="40" color="#4CAF50"><Sunny /></el-icon>
           </div>
@@ -46,7 +46,7 @@
       </div>
 
       <div class="register-right">
-        <div class="form-wrapper">
+        <div class="form-wrapper animate__animated animate__fadeInRight">
           <h2 class="form-title">创建账号</h2>
           <p class="form-subtitle">填写信息完成注册</p>
           <el-form :model="form" :rules="rules" ref="formRef" size="large" class="register-form">
@@ -108,7 +108,6 @@ import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import { ElMessage } from 'element-plus'
-import { User, Message, Lock } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -180,7 +179,7 @@ async function handleRegister() {
 
 .register-left {
   flex: 1;
-  background: linear-gradient(160deg, #0f3460 0%, #16213e 40%, #1a1a2e 100%);
+  background: linear-gradient(160deg, #065f8a 0%, #1e293b 40%, #0f172a 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -195,7 +194,7 @@ async function handleRegister() {
   width: 300px;
   height: 300px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(56, 239, 125, 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
   bottom: -80px;
   left: -80px;
 }
@@ -206,7 +205,7 @@ async function handleRegister() {
   width: 200px;
   height: 200px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(79, 172, 254, 0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, transparent 70%);
   top: -40px;
   right: -50px;
 }
@@ -235,6 +234,10 @@ async function handleRegister() {
   font-weight: 700;
   margin-bottom: 12px;
   letter-spacing: 1px;
+  background: linear-gradient(90deg, #fff, rgba(255,255,255,0.8));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .brand-desc {
@@ -257,6 +260,15 @@ async function handleRegister() {
   gap: 10px;
   font-size: 13px;
   color: rgba(255, 255, 255, 0.75);
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.03);
+  transition: background 0.2s, transform 0.2s;
+}
+
+.feature-item:hover {
+  background: rgba(255,255,255,0.07);
+  transform: translateX(4px);
 }
 
 .feature-icon { font-size: 18px; }
@@ -335,14 +347,14 @@ async function handleRegister() {
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 4px;
-  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
   border: none;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .submit-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 24px rgba(17, 153, 142, 0.35);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35);
 }
 
 .form-footer {
@@ -353,13 +365,13 @@ async function handleRegister() {
 }
 
 .form-footer .link {
-  color: #11998e;
+  color: #10b981;
   font-weight: 500;
   text-decoration: none;
 }
 
 .form-footer .link:hover {
-  color: #38ef7d;
+  color: #34d399;
 }
 
 @media (max-width: 768px) {

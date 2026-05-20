@@ -36,8 +36,8 @@ public interface UserMapper {
             "</script>")
     List<User> selectList(@Param("username") String username, @Param("role") String role, @Param("status") Integer status);
 
-    @Insert("INSERT INTO user (username, password, nickname, email, phone, avatar, role, status) " +
-            "VALUES (#{username}, #{password}, #{nickname}, #{email}, #{phone}, #{avatar}, #{role}, #{status})")
+    @Insert("INSERT INTO user (username, password, nickname, email, phone, role, status) " +
+            "VALUES (#{username}, #{password}, #{nickname}, #{email}, #{phone}, #{role}, #{status})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(User user);
 
@@ -47,7 +47,6 @@ public interface UserMapper {
             "<if test='nickname != null'> , nickname = #{nickname}</if>" +
             "<if test='email != null'> , email = #{email}</if>" +
             "<if test='phone != null'> , phone = #{phone}</if>" +
-            "<if test='avatar != null'> , avatar = #{avatar}</if>" +
             "<if test='status != null'> , status = #{status}</if>" +
             " WHERE id = #{id}" +
             "</script>")

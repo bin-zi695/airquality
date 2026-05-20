@@ -1,10 +1,10 @@
 <template>
   <div class="admin-cities">
-    <el-card>
+    <el-card class="animate__animated animate__fadeInUp">
       <el-button type="primary" @click="openDialog(null)">新增城市</el-button>
     </el-card>
 
-    <el-card style="margin-top:16px">
+    <el-card class="animate__animated animate__fadeInUp" style="margin-top:16px;animation-delay:0.1s">
       <el-table :data="tableData" border stripe v-loading="loading">
         <el-table-column prop="id" label="ID" width="60" />
         <el-table-column prop="name" label="城市名" width="100" />
@@ -94,3 +94,19 @@ async function deleteCity(row) {
 
 onMounted(fetchData)
 </script>
+
+<style scoped>
+.admin-cities :deep(.el-card) {
+  border-radius: 14px;
+  border: none;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+.admin-cities :deep(.el-table th.el-table__cell) {
+  background: #f8f9fc !important;
+  font-weight: 600 !important;
+  color: #1a1a2e !important;
+}
+.admin-cities :deep(.el-table__row:hover) {
+  background: #f0f5ff !important;
+}
+</style>

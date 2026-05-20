@@ -13,7 +13,7 @@
 
     <el-row :gutter="20" class="stats-row">
       <el-col :span="6" v-for="(item, idx) in statsCards" :key="item.label">
-        <div class="stat-card-dash" :class="`stat-grad-${idx}`">
+        <div class="stat-card-dash animate__animated animate__fadeInUp" :class="`stat-grad-${idx}`" :style="{ animationDelay: `${idx * 0.1}s` }" @click="handleStatClick(item)" style="cursor: pointer;">
           <div class="stat-inner">
             <div class="stat-left">
               <div class="stat-num">{{ item.value }}</div>
@@ -24,6 +24,7 @@
             </div>
           </div>
           <div class="stat-pattern"></div>
+          <div class="stat-hint"><el-icon><ArrowRight /></el-icon></div>
         </div>
       </el-col>
     </el-row>
@@ -62,8 +63,8 @@
       </div>
 
       <el-row v-else :gutter="16">
-        <el-col :span="8" v-for="item in favoriteData" :key="item.id">
-          <div class="aqi-card-new" :style="{ borderTopColor: getAqiColor(item.aqi) }" @click="$router.push(`/air-quality/${item.id}`)">
+        <el-col :span="8" v-for="(item, idx) in favoriteData" :key="item.id">
+          <div class="aqi-card-new animate__animated animate__fadeInUp" :style="{ borderTopColor: getAqiColor(item.aqi), animationDelay: `${0.1 + idx * 0.08}s` }" @click="$router.push(`/air-quality/${item.id}`)">
             <div class="aqi-top">
               <div class="aqi-city">
                 <el-icon style="margin-right:2px"><OfficeBuilding /></el-icon>
@@ -107,7 +108,7 @@
 
     <el-row :gutter="20">
       <el-col :span="12">
-        <div class="feature-card chart-card" @click="$router.push('/charts')">
+        <div class="feature-card chart-card animate__animated animate__fadeInLeft" @click="$router.push('/charts')">
           <div class="fc-icon"><el-icon :size="36"><TrendCharts /></el-icon></div>
           <div class="fc-info">
             <div class="fc-title">数据可视化</div>
@@ -117,7 +118,7 @@
         </div>
       </el-col>
       <el-col :span="12">
-        <div class="feature-card article-card" @click="$router.push('/articles')">
+        <div class="feature-card article-card animate__animated animate__fadeInRight" @click="$router.push('/articles')">
           <div class="fc-icon"><el-icon :size="36"><Reading /></el-icon></div>
           <div class="fc-info">
             <div class="fc-title">科普资讯</div>
@@ -127,15 +128,37 @@
         </div>
       </el-col>
     </el-row>
+
+    <!-- 预警城市列表弹窗 -->
+    <el-dialog v-model="warningDialogVisible" title="预警城市列表" width="500px" :close-on-click-modal="false" class="warning-dialog">
+      <div v-if="warningCitiesList.length" class="warning-list">
+        <div v-for="city in warningCitiesList" :key="city.id" class="warning-item" @click="goToCity(city)">
+          <div class="warning-left">
+            <div class="warning-city">{{ getCityName(city.cityId) }}</div>
+            <div class="warning-date">{{ city.date }}</div>
+          </div>
+          <div class="warning-right">
+            <span class="aqi-badge-sm" :style="{ background: getAqiColor(city.aqi) }">
+              AQI {{ city.aqi }} {{ getAqiLevelName(city.aqi) }}
+            </span>
+            <el-icon style="color:#bbb;font-size:16px"><ArrowRight /></el-icon>
+          </div>
+        </div>
+      </div>
+      <el-empty v-else description="暂无预警城市" :image-size="80" />
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { airDataApi, favoriteApi, cityApi, alertApi } from '@/api'
 import { useUserStore } from '@/store/user'
+import { ElMessage } from 'element-plus'
 
 const userStore = useUserStore()
+const router = useRouter()
 const loading = ref(true)
 const favoriteData = ref([])
 const hasFavorites = ref(false)
@@ -145,11 +168,33 @@ const alertData = ref({})
 const alertCityName = ref('')
 
 const statsCards = computed(() => [
-  { label: '收藏城市', value: favoriteCitiesCount.value, color: '#667eea', icon: 'Star' },
-  { label: '优/良天数', value: favoriteData.value.filter(d => d.aqi != null && d.aqi <= 100).length, color: '#11998e', icon: 'Sunny' },
-  { label: '预警城市', value: favoriteData.value.filter(d => d.aqi != null && d.aqi >= 150).length, color: '#f5576c', icon: 'WarningFilled' },
-  { label: '监测指标', value: '6项', color: '#4facfe', icon: 'DataAnalysis' },
+  { label: '收藏城市', value: favoriteCitiesCount.value, icon: 'Star', route: '/favorites' },
+  { label: '优/良天数', value: favoriteData.value.filter(d => d.aqi != null && d.aqi <= 100).length, icon: 'Sunny', route: '/air-quality' },
+  { label: '预警城市', value: favoriteData.value.filter(d => d.aqi != null && d.aqi >= 150).length, icon: 'WarningFilled', route: '/charts' },
+  { label: '监测指标', value: '6项', icon: 'DataAnalysis', route: '/charts' },
 ])
+
+function handleStatClick(item) {
+  if (item.label === '预警城市') {
+    const warningCities = favoriteData.value.filter(d => d.aqi != null && d.aqi >= 150)
+    if (warningCities.length > 0) {
+      warningCitiesList.value = warningCities
+      warningDialogVisible.value = true
+    } else {
+      ElMessage.info('当前无预警城市，空气质量良好')
+    }
+    return
+  }
+  if (item.route) router.push(item.route)
+}
+
+function goToCity(city) {
+  warningDialogVisible.value = false
+  router.push(`/air-quality/${city.id}`)
+}
+
+const warningDialogVisible = ref(false)
+const warningCitiesList = ref([])
 
 const favoriteCitiesCount = computed(() => favoriteIds.value.length)
 
@@ -245,7 +290,7 @@ async function loadByDate() {
 </script>
 
 <style scoped>
-.dashboard { }
+
 
 .alert-wrap { margin-bottom: 20px; }
 .alert-animate { animation: alertPulse 2s ease-in-out infinite; }
@@ -257,36 +302,50 @@ async function loadByDate() {
 .stats-row { margin-bottom: 24px; }
 
 .stat-card-dash {
-  border-radius: 14px;
-  padding: 20px 18px;
+  border-radius: 16px;
+  padding: 22px 20px;
   position: relative;
   overflow: hidden;
-  cursor: default;
-  transition: transform 0.25s, box-shadow 0.25s;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
 }
 .stat-card-dash:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 28px rgba(0,0,0,0.1);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.15);
 }
-.stat-grad-0 { background: linear-gradient(135deg, #667eea, #764ba2); }
-.stat-grad-1 { background: linear-gradient(135deg, #11998e, #38ef7d); }
-.stat-grad-2 { background: linear-gradient(135deg, #f093fb, #f5576c); }
-.stat-grad-3 { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+.stat-card-dash:hover .stat-hint {
+  opacity: 1;
+  transform: translateX(0);
+}
+.stat-hint {
+  position: absolute;
+  bottom: 10px;
+  right: 14px;
+  color: rgba(255,255,255,0.5);
+  font-size: 14px;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity 0.25s, transform 0.25s;
+}
+.stat-grad-0 { background: linear-gradient(135deg, #3b82f6, #06b6d4); }
+.stat-grad-1 { background: linear-gradient(135deg, #10b981, #34d399); }
+.stat-grad-2 { background: linear-gradient(135deg, #f59e0b, #f97316); }
+.stat-grad-3 { background: linear-gradient(135deg, #6366f1, #3b82f6); }
 
 .stat-pattern {
   position: absolute;
-  width: 90px; height: 90px;
+  width: 100px; height: 100px;
   border-radius: 50%;
   background: rgba(255,255,255,0.08);
-  top: -20px; right: -25px;
+  top: -25px; right: -30px;
 }
 .stat-pattern::after {
   content: '';
   position: absolute;
-  width: 55px; height: 55px;
+  width: 60px; height: 60px;
   border-radius: 50%;
   background: rgba(255,255,255,0.06);
-  top: 50px; left: 20px;
+  top: 55px; left: 25px;
 }
 
 .stat-inner {
@@ -296,9 +355,9 @@ async function loadByDate() {
   position: relative;
   z-index: 1;
 }
-.stat-num { font-size: 30px; font-weight: 700; color: #fff; line-height: 1; }
-.stat-desc { font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 6px; }
-.stat-icon-wrap { color: rgba(255,255,255,0.4); }
+.stat-num { font-size: 32px; font-weight: 800; color: #fff; line-height: 1; letter-spacing: -0.5px; }
+.stat-desc { font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 6px; letter-spacing: 0.3px; }
+.stat-icon-wrap { color: rgba(255,255,255,0.35); }
 
 .section-card {
   border-radius: 14px;
@@ -313,7 +372,7 @@ async function loadByDate() {
 .title-dot {
   width: 8px; height: 8px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #3b82f6, #06b6d4);
   display: inline-block;
 }
 
@@ -322,17 +381,17 @@ async function loadByDate() {
 
 .aqi-card-new {
   background: #fff;
-  border-radius: 14px;
+  border-radius: 16px;
   border-top: 4px solid #ccc;
-  padding: 20px;
+  padding: 22px;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
   box-shadow: 0 2px 10px rgba(0,0,0,0.04);
   margin-bottom: 16px;
 }
 .aqi-card-new:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 32px rgba(0,0,0,0.08);
+  transform: translateY(-6px);
+  box-shadow: 0 12px 36px rgba(0,0,0,0.1);
 }
 
 .aqi-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
@@ -364,21 +423,46 @@ async function loadByDate() {
 .feature-card {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 24px;
-  border-radius: 14px;
+  gap: 18px;
+  padding: 26px 24px;
+  border-radius: 16px;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
   position: relative;
   overflow: hidden;
 }
-.feature-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,0.08); }
+.feature-card::after {
+  content: '';
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  top: -40px;
+  right: -30px;
+  pointer-events: none;
+}
+.chart-card::after { background: radial-gradient(circle, rgba(102,126,234,0.08), transparent 70%); }
+.article-card::after { background: radial-gradient(circle, rgba(17,153,142,0.08), transparent 70%); }
+.feature-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.1); }
 .chart-card { background: linear-gradient(135deg, #f0f5ff, #e8eeff); }
 .article-card { background: linear-gradient(135deg, #f0fdf4, #e6f9ee); }
 .fc-icon { font-size: 36px; }
 .fc-info { flex: 1; }
 .fc-title { font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
-.fc-desc { font-size: 12px; color: #888; }
-.fc-arrow { font-size: 24px; color: #ccc; transition: color 0.2s, transform 0.2s; }
-.feature-card:hover .fc-arrow { color: #666; transform: translateX(3px); }
+.fc-desc { font-size: 12px; color: #888; line-height: 1.4; }
+.fc-arrow { font-size: 24px; color: #ccc; transition: color 0.2s, transform 0.3s; }
+.feature-card:hover .fc-arrow { color: #3b82f6; transform: translateX(4px); }
+
+.warning-dialog :deep(.el-dialog__body) { padding: 16px 24px; }
+.warning-list { display: flex; flex-direction: column; gap: 8px; }
+.warning-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; border-radius: 12px;
+  background: #fafafa; cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+.warning-item:hover { background: #f0f5ff; transform: translateX(4px); }
+.warning-city { font-size: 15px; font-weight: 600; color: #1a1a2e; }
+.warning-date { font-size: 11px; color: #bbb; margin-top: 2px; }
+.warning-right { display: flex; align-items: center; gap: 10px; }
 </style>

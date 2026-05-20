@@ -1,6 +1,6 @@
 <template>
   <div class="admin-users">
-    <el-card>
+    <el-card class="animate__animated animate__fadeInUp">
       <el-form :inline="true" :model="query">
         <el-form-item label="搜索"><el-input v-model="query.username" placeholder="搜索用户名" clearable /></el-form-item>
         <el-form-item label="角色">
@@ -13,7 +13,7 @@
       </el-form>
     </el-card>
 
-    <el-card style="margin-top:16px">
+    <el-card class="animate__animated animate__fadeInUp" style="margin-top:16px;animation-delay:0.1s">
       <el-table :data="tableData" border stripe v-loading="loading">
         <el-table-column prop="id" label="ID" width="60" />
         <el-table-column prop="username" label="用户名" width="120" />
@@ -75,3 +75,19 @@ async function deleteUser(row) {
 
 onMounted(fetchData)
 </script>
+
+<style scoped>
+.admin-users :deep(.el-card) {
+  border-radius: 14px;
+  border: none;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+.admin-users :deep(.el-table th.el-table__cell) {
+  background: #f8f9fc !important;
+  font-weight: 600 !important;
+  color: #1a1a2e !important;
+}
+.admin-users :deep(.el-table__row:hover) {
+  background: #f0f5ff !important;
+}
+</style>

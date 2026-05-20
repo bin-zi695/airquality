@@ -1,12 +1,12 @@
 <template>
   <div class="article-detail">
-    <el-page-header @back="$router.push('/articles')">
+    <el-page-header @back="$router.push('/articles')" class="animate__animated animate__fadeInDown">
       <template #content>
         <span class="page-header-title"><el-icon style="margin-right:4px"><Reading /></el-icon>科普资讯</span>
       </template>
     </el-page-header>
 
-    <el-card class="detail-card" shadow="never" v-loading="loading">
+    <el-card class="detail-card animate__animated animate__fadeInUp" shadow="never" v-loading="loading">
       <template v-if="article">
         <h1 class="article-title">{{ article.title }}</h1>
         <div class="article-meta">
@@ -102,7 +102,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.article-detail { }
 .page-header-title { font-size: 16px; font-weight: 600; }
 .detail-card {
   margin-top: 20px;
@@ -111,10 +110,11 @@ onMounted(async () => {
   box-shadow: 0 2px 12px rgba(0,0,0,0.04);
 }
 .article-title {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
   color: #1a1a2e;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  line-height: 1.3;
 }
 .article-meta {
   display: flex;
@@ -122,6 +122,7 @@ onMounted(async () => {
   font-size: 12px;
   color: #bbb;
 }
+.article-meta span { display: flex; align-items: center; }
 .article-content {
   font-size: 14px;
   color: #444;

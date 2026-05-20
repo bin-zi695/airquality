@@ -9,7 +9,6 @@ public class User {
     private String nickname;
     private String email;
     private String phone;
-    private String avatar;
     private String role;
     private Integer status;
     private LocalDateTime createdAt;
@@ -32,9 +31,6 @@ public class User {
 
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
-
-    public String getAvatar() { return avatar; }
-    public void setAvatar(String avatar) { this.avatar = avatar; }
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }

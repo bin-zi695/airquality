@@ -4,6 +4,23 @@
   box-sizing: border-box;
 }
 
+:root {
+  --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+  --primary-color: #3b82f6;
+  --secondary-color: #06b6d4;
+  --bg-color: #f0f4f8;
+  --card-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  --card-shadow-hover: 0 8px 28px rgba(0,0,0,0.08);
+  --card-radius: 14px;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --border-color: #e2e8f0;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+}
+
 html, body, #app {
   height: 100%;
   font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -15,27 +32,27 @@ body {
 }
 
 .pattern-bg {
-  background-color: #f0f5ff;
+  background-color: var(--bg-color);
   background-image:
-    radial-gradient(ellipse at 20% 50%, rgba(102, 126, 234, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 20%, rgba(118, 75, 162, 0.06) 0%, transparent 50%),
-    radial-gradient(ellipse at 60% 80%, rgba(64, 158, 255, 0.05) 0%, transparent 50%);
+    radial-gradient(ellipse at 20% 50%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(6, 182, 212, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 60% 80%, rgba(16, 185, 129, 0.03) 0%, transparent 50%);
 }
 
 .card-gradient {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
 }
 
 .card-gradient-green {
-  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
 }
 
 .card-gradient-orange {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
 }
 
 .card-gradient-blue {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  background: linear-gradient(135deg, #6366f1 0%, #3b82f6 100%);
 }
 
 .stat-card-gradient {
@@ -63,6 +80,15 @@ body {
   background: rgba(255, 255, 255, 0.06);
   bottom: -20px;
   right: 30px;
+}
+
+/* Glass morphism card */
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--card-radius);
 }
 
 .aqi-badge {
@@ -93,6 +119,26 @@ body {
   }
 }
 
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -109,4 +155,247 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #909399;
+}
+
+/* Modern card style for Element Plus tables */
+.el-card {
+  border-radius: var(--card-radius) !important;
+  border: none !important;
+}
+
+.el-table th.el-table__cell {
+  background-color: #f8f9fc !important;
+  font-weight: 600 !important;
+  color: var(--text-primary) !important;
+}
+
+.el-table--border {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.el-button--primary {
+  --el-button-bg-color: #3b82f6;
+  --el-button-border-color: #3b82f6;
+  --el-button-hover-bg-color: #60a5fa;
+  --el-button-hover-border-color: #60a5fa;
+}
+
+.el-button--primary.is-round {
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+  transition: all 0.25s;
+}
+
+.el-button--primary.is-round:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+.el-button--success.is-round {
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+  transition: all 0.25s;
+}
+
+.el-button--success.is-round:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.el-input__wrapper {
+  border-radius: 10px !important;
+  box-shadow: 0 0 0 1px #e4e7ed inset !important;
+  transition: box-shadow 0.3s !important;
+}
+
+.el-input__wrapper:hover {
+  box-shadow: 0 0 0 1px #c0c4cc inset !important;
+}
+
+.el-input__wrapper.is-focus {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25) inset !important;
+}
+
+.el-dialog {
+  border-radius: 16px !important;
+}
+
+.el-dialog__header {
+  padding: 20px 24px 0 !important;
+}
+
+.el-dialog__body {
+  padding: 20px 24px !important;
+}
+
+.el-dialog__footer {
+  padding: 0 24px 20px !important;
+}
+
+.el-tag {
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+}
+
+.el-select .el-tag {
+  border-radius: 6px !important;
+}
+
+.el-page-header__back {
+  border-radius: 8px !important;
+  transition: background 0.2s !important;
+}
+
+.el-page-header__back:hover {
+  background: rgba(59, 130, 246, 0.08) !important;
+}
+
+/* === Select 筛选框美化 === */
+.el-select .el-input__wrapper {
+  border-radius: 10px !important;
+  box-shadow: 0 0 0 1px #e4e7ed inset !important;
+  transition: all 0.3s !important;
+  background: #fff !important;
+}
+
+.el-select .el-input__wrapper:hover {
+  box-shadow: 0 0 0 1px #c0c4cc inset !important;
+}
+
+.el-select .el-input__wrapper.is-focus {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25) inset !important;
+  border-color: transparent !important;
+}
+
+.el-select-dropdown {
+  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1) !important;
+  padding: 6px !important;
+  margin-top: 4px !important;
+}
+
+.el-select-dropdown .el-select-dropdown__item {
+  border-radius: 8px !important;
+  padding: 0 12px !important;
+  height: 36px !important;
+  line-height: 36px !important;
+  font-size: 13px !important;
+  transition: background 0.2s !important;
+}
+
+.el-select-dropdown .el-select-dropdown__item.hover,
+.el-select-dropdown .el-select-dropdown__item:hover {
+  background: rgba(59, 130, 246, 0.08) !important;
+}
+
+.el-select-dropdown .el-select-dropdown__item.selected {
+  color: #3b82f6 !important;
+  font-weight: 600 !important;
+  background: rgba(59, 130, 246, 0.1) !important;
+}
+
+/* === Dropdown 菜单美化（个人中心/退出登录） === */
+.el-dropdown-menu {
+  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12) !important;
+  padding: 6px !important;
+}
+
+.el-dropdown-menu .el-dropdown-menu__item {
+  border-radius: 8px !important;
+  padding: 0 16px !important;
+  height: 40px !important;
+  line-height: 40px !important;
+  font-size: 13px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  transition: all 0.2s !important;
+}
+
+.el-dropdown-menu .el-dropdown-menu__item .el-icon {
+  font-size: 16px !important;
+  margin-right: 4px !important;
+}
+
+.el-dropdown-menu .el-dropdown-menu__item:hover {
+  background: rgba(59, 130, 246, 0.08) !important;
+  color: #3b82f6 !important;
+}
+
+.el-dropdown-menu .el-dropdown-menu__item:active {
+  background: rgba(59, 130, 246, 0.15) !important;
+}
+
+.el-dropdown-menu .el-dropdown-menu__item.is-divided {
+  border-top: 1px solid #f0f0f0 !important;
+  margin-top: 4px !important;
+  padding-top: 4px !important;
+}
+
+.el-dropdown-menu .el-dropdown-menu__item--danger {
+  color: #ef4444 !important;
+}
+
+.el-dropdown-menu .el-dropdown-menu__item--danger:hover {
+  background: rgba(239, 68, 68, 0.08) !important;
+  color: #dc2626 !important;
+}
+
+/* === 筛选卡片统一美化 === */
+.filter-card {
+  border-radius: 14px !important;
+  border: none !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04) !important;
+  margin-bottom: 16px;
+}
+
+.filter-card .el-form--inline .el-form-item {
+  margin-right: 20px;
+}
+
+.filter-card .el-form--inline .el-form-item:last-child {
+  margin-right: 0;
+}
+
+.filter-card .el-form-item__label {
+  font-weight: 500;
+  color: #475569;
+}
+
+/* === 管理后台卡片美化 === */
+.admin-card {
+  border-radius: 14px !important;
+  border: none !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04) !important;
+}
+
+.admin-card + .admin-card {
+  margin-top: 16px;
+}
+
+/* === DatePicker 美化 === */
+.el-date-editor .el-input__wrapper {
+  border-radius: 10px !important;
+}
+
+.el-picker-panel {
+  border-radius: 12px !important;
+  border: none !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* === Animate.css 自定义 === */
+.animate__animated {
+  animation-duration: 0.5s;
+}
+
+.animate__animated.animate__fadeInDown {
+  animation-duration: 0.6s;
+}
+
+.animate__animated.animate__fadeInLeft,
+.animate__animated.animate__fadeInRight {
+  animation-duration: 0.7s;
 }

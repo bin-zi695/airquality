@@ -2,6 +2,7 @@ package com.example.airquality.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -35,13 +36,16 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/articles/published").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/articles/**").permitAll()
                 .requestMatchers("/api/cities", "/api/cities/all", "/api/cities/**").permitAll()
                 .requestMatchers("/api/air-data", "/api/air-data/**").permitAll()
                 .requestMatchers("/api/alert-thresholds/enabled").permitAll()
-                .requestMatchers("/api/upload/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/alert-thresholds").permitAll()
                 .requestMatchers("/api/admin/sync-now").permitAll()
                 .requestMatchers("/api/admin/sync-history").permitAll()
                 .requestMatchers("/api/admin/**").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/favorites/**").permitAll()
+                .requestMatchers("/api/logs/**").authenticated()
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().permitAll()
             )

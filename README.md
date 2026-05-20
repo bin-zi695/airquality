@@ -12,8 +12,8 @@
 | 数据库 | MySQL |
 | ORM | MyBatis 3.0.5 |
 | 缓存 | Redis |
-| 安全认证 | Spring Security + JWT |
-| AOP | Spring AOP（预警检测切面） |
+| 安全认证 | Spring Security + JWT（Token 自动续签） |
+| AOP | Spring AOP（预警检测切面 + 操作日志记录） |
 | IoC 策略 | 策略模式实现 AQI 等级可插拔判定 |
 | DDL 执行 | JdbcTemplate（AUTO_INCREMENT 重置） |
 | 前端框架 | Vue 3 + Vite |
@@ -21,6 +21,7 @@
 | 状态管理 | Pinia |
 | 路由 | Vue Router（含角色路由守卫） |
 | 图表 | ECharts 5 |
+| 动画 | Animate.css |
 | 数据源 | 和风天气 API（空气质量/天气/历史） |
 | HTTP 客户端 | OkHttp |
 | JSON 解析 | Jackson |
@@ -42,16 +43,17 @@ air-quality-system/
 │           └── java/com/example/airquality/
 │               ├── AirqualityApplication.java  # 启动类 (@EnableScheduling)
 │               │
-│               ├── entity/                     # 📦 实体类（7个）
+│               ├── entity/                     # 📦 实体类（8个）
 │               │   ├── User.java               #   用户实体
 │               │   ├── City.java               #   城市实体（含经纬度/locationId）
 │               │   ├── AirQualityData.java     #   空气质量数据实体（含天气字段）
 │               │   ├── UserFavorite.java       #   用户收藏关联实体
 │               │   ├── AlertThreshold.java     #   预警阈值实体
 │               │   ├── SystemConfig.java       #   系统配置实体
-│               │   └── AirQualityArticle.java  #   科普资讯实体
+│               │   ├── AirQualityArticle.java  #   科普资讯实体
+│               │   └── OperationLog.java       #   操作日志实体
 │               │
-│               ├── mapper/                     # 📦 MyBatis Mapper 接口（7个，纯注解版）
+│               ├── mapper/                     # 📦 MyBatis Mapper 接口（8个，纯注解版）
 │               │   ├── UserMapper.java         #   用户数据操作 + selectMaxId
 │               │   ├── CityMapper.java         #   城市增删改查 + selectMaxId
 │               │   ├── AirQualityDataMapper.java # 空气质量数据 CRUD + 批量 + 趋势 + 清理 + selectMaxId
@@ -59,6 +61,7 @@ air-quality-system/
 │               │   ├── AlertThresholdMapper.java  # 阈值管理 + selectMaxId
 │               │   ├── SystemConfigMapper.java #   系统配置读写
 │               │   └── AirQualityArticleMapper.java # 资讯管理 + selectMaxId
+│               │   └── OperationLogMapper.java #   操作日志查询
 │               │
 │               ├── service/                    # 📦 业务服务层
 │               │   ├── UserService.java        #   用户注册/登录/修改/删除（含ID重置）
@@ -68,6 +71,7 @@ air-quality-system/
 │               │   ├── AlertThresholdService.java # 预警阈值管理（含ID重置）
 │               │   ├── SystemConfigService.java   # 系统配置
 │               │   ├── AirQualityArticleService.java # 资讯管理（含ID重置）
+│               │   ├── OperationLogService.java  #   操作日志
 │               │   ├── AqiLevelService.java    # ★ AQI 等级判定（IoC 注入 6 种策略）
 │               │   ├── DataSyncService.java    # ★ 数据同步（实时采集 + 历史回填 + 15天清理）
 │               │   ├── HeFengApiService.java   # ★ 和风天气 API 调用（空气/天气/历史）
@@ -90,12 +94,12 @@ air-quality-system/
 │               │   ├── AlertThresholdController.java  # 预警阈值管理（管理员）
 │               │   ├── SyncController.java     # ★ 数据采集（手动触发 + 历史回填）
 │               │   ├── SystemConfigController.java    # 系统配置
-│               │   ├── UploadController.java          # 文件上传
-│               │   └── AirQualityArticleController.java # 科普资讯管理
+│               │   ├── AirQualityArticleController.java # 科普资讯管理
+│               │   └── OperationLogController.java  # 操作日志查询
 │               │
 │               ├── config/                      # ⚙ 应用配置
 │               │   ├── DataInitConfig.java      #   启动时自动初始化管理员账号
-│               │   └── WebMvcConfig.java        #   静态资源映射（上传文件访问）
+│               │   └── WebMvcConfig.java        #   Web MVC 配置
 │               │
 │               ├── aop/                         # ★ Spring AOP 切面
 │               │   └── AlertDetectionAspect.java #   拦截数据入库自动检测 AQI 预警
@@ -131,15 +135,15 @@ air-quality-system/
 │       ├── router/
 │       │   └── index.js                         #   Vue Router（路由守卫+角色拦截）
 │       │
-│       └── views/                               # 📄 页面组件（16个）
-│           ├── Login.vue                        #   登录页
+│       └── views/                               # 📄 页面组件（17个）
+│           ├── Login.vue                        #   登录页（SVG Logo）
 │           ├── Register.vue                     #   注册页
-│           ├── layout/Layout.vue                #   后台布局（顶栏+侧栏+内容区）
+│           ├── layout/Layout.vue                #   后台布局（顶栏+侧栏+内容区 + keep-alive 缓存）
 │           ├── dashboard/Dashboard.vue          #   首页（统计卡片+收藏城市AQI卡片+入口）
-│           ├── air-quality/AirQualityList.vue   #   空气质量查询列表（15天内筛选）
+│           ├── air-quality/AirQualityList.vue   #   空气质量查询列表（15天内筛选+省份筛选）
 │           ├── air-quality/AirQualityDetail.vue #   单条数据详情
-│           ├── charts/Charts.vue                #   数据可视化（趋势图+饼图+对比图，默认7天）
-│           ├── favorites/Favorites.vue          #   我的收藏（添加/删除城市）
+│           ├── charts/Charts.vue                #   数据可视化（趋势图+饼图+对比图，默认7天+省份筛选）
+│           ├── favorites/Favorites.vue          #   我的收藏（省份筛选+添加/删除城市）
 │           ├── articles/Articles.vue            #   科普资讯列表
 │           ├── articles/ArticleDetail.vue       #   资讯详情页
 │           ├── profile/Profile.vue              #   个人中心
@@ -148,7 +152,8 @@ air-quality-system/
 │               ├── Cities.vue                   #   城市管理
 │               ├── AirData.vue                  #   数据管理（采集按钮+增删改查）
 │               ├── AlertThreshold.vue           #   预警阈值配置
-│               └── Articles.vue                 #   资讯发布管理
+│               ├── Articles.vue                 #   资讯发布管理
+│               └── OperationLogs.vue            #   操作日志
 ```
 
 ## 数据库表
@@ -162,6 +167,7 @@ air-quality-system/
 | `alert_threshold` | 预警阈值配置表 |
 | `system_config` | 系统配置表 |
 | `air_quality_article` | 科普资讯表 |
+| `operation_log` | 操作日志表 |
 
 ## API 接口一览
 
@@ -193,6 +199,8 @@ air-quality-system/
 | GET/POST/PUT/DELETE | `/api/cities/**` | 城市管理（除 all） | 管理员 |
 | GET/POST/PUT/DELETE | `/api/alert-thresholds/**` | 预警阈值管理 | 管理员 |
 | GET/POST/PUT/DELETE | `/api/articles/**` | 资讯管理（除 published） | 管理员 |
+| GET | `/api/logs` | 操作日志列表 | 管理员 |
+| GET | `/api/logs/count` | 操作日志总数 | 管理员 |
 
 ## 数据采集方案
 
@@ -235,6 +243,18 @@ air-quality-system/
 ### 前端日期筛选限制
 
 所有日期选择组件限制只能查询最近 15 天数据，与数据库保留策略一致。
+
+### 省份筛选 + keep-alive 缓存
+
+空气质量查询、数据可视化、我的收藏三页面支持按省份筛选城市，并采用 `<keep-alive>` 缓存筛选状态，切换页面后不会丢失筛选条件。
+
+### SVG 内联 logo
+
+头像和登录页 logo 使用内联 SVG（data URI），无外部图片依赖，部署在任何环境都能正常显示。
+
+### 操作日志
+
+管理员所有增删改操作自动记录操作日志（OperationLog），可在管理端查看和筛选。
 
 ### 日志精简
 
@@ -281,8 +301,17 @@ cd air-quality-backend/airquality
 ```bash
 cd air-quality-frontend
 npm install
-npm run dev                   # 端口 3000（已代理 /api 到 8080）
+
+# 开发模式（端口 3000，代理 /api 到 8080）
+npm run dev
+
+# 或构建后预览（端口 3000，proxy 同样生效）
+npm run build
+npm run preview
 ```
+
+> 前后端部署在同一台机器时 `vite.config.js` 的 proxy target 为 `http://localhost:8080`，无需修改。
+> 生产部署建议使用 `npm run build + npm run preview`，Vite preview 服务器同样支持 proxy 转发。
 
 ### 5. 管理员账号
 
@@ -301,3 +330,19 @@ UPDATE air_quality_db.user SET role = 'admin' WHERE username = '你的用户名'
 ### 6. 初始化数据
 
 启动后访问 `http://localhost:8080/api/admin/sync-history?days=4` 回填最近 4 天历史数据。
+
+### 7. 部署到云服务器
+
+```bash
+# 上传代码后，启动后端
+cd /opt/airquality/air-quality-backend/airquality
+nohup mvn spring-boot:run > app.log 2>&1 &
+
+# 构建并启动前端
+cd /opt/airquality/air-quality-frontend
+npm install
+npm run build
+nohup npm run preview > front.log 2>&1 &
+```
+
+浏览器访问 `http://服务器IP:3000` 即可打开系统。

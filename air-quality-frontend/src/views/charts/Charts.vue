@@ -1,10 +1,15 @@
 <template>
   <div class="charts-page">
-    <el-card class="filter-card" shadow="never">
+    <el-card class="filter-card animate__animated animate__fadeInUp" shadow="never">
       <el-form :inline="true">
+        <el-form-item label="省份">
+          <el-select v-model="filterProvince" placeholder="全部省份" clearable size="large" style="min-width:130px">
+            <el-option v-for="p in provinces" :key="p" :label="p" :value="p" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="城市">
-          <el-select v-model="cityId" placeholder="选择城市" size="large" style="min-width:160px" @change="loadTrendAndPie">
-            <el-option v-for="c in cities" :key="c.id" :label="c.name" :value="c.id" />
+          <el-select v-model="cityId" placeholder="选择城市" filterable size="large" style="min-width:160px" @change="loadTrendAndPie">
+            <el-option v-for="c in filteredCities" :key="c.id" :label="`${c.name} · ${c.province || ''}`" :value="c.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="时间范围">
@@ -23,7 +28,7 @@
 
     <el-row :gutter="16">
       <el-col :span="24">
-        <el-card class="chart-card" shadow="never">
+        <el-card class="chart-card animate__animated animate__fadeInUp" shadow="never" style="animation-delay:0.1s">
           <template #header><span class="chart-title"><el-icon style="margin-right:4px"><TrendCharts /></el-icon>空气质量趋势</span></template>
           <div ref="trendChart" style="height:350px"></div>
         </el-card>
@@ -31,13 +36,13 @@
     </el-row>
     <el-row :gutter="16" style="margin-top:16px">
       <el-col :span="12">
-        <el-card class="chart-card" shadow="never">
+        <el-card class="chart-card animate__animated animate__fadeInUp" shadow="never" style="animation-delay:0.2s">
           <template #header><span class="chart-title"><el-icon style="margin-right:4px"><Aim /></el-icon>AQI 等级分布</span></template>
           <div ref="pieChart" style="height:350px"></div>
         </el-card>
       </el-col>
       <el-col :span="12">
-        <el-card class="chart-card" shadow="never">
+        <el-card class="chart-card animate__animated animate__fadeInUp" shadow="never" style="animation-delay:0.3s">
           <template #header>
             <div class="chart-header-row">
               <span class="chart-title"><el-icon style="margin-right:4px"><OfficeBuilding /></el-icon>多城市对比</span>
@@ -53,12 +58,22 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick, onBeforeUnmount } from 'vue'
 import * as echarts from 'echarts'
 import { airDataApi, cityApi } from '@/api'
 
 const cities = ref([])
 const cityId = ref(1)
+const filterProvince = ref('')
+
+const provinces = computed(() => {
+  const set = new Set(cities.value.map(c => c.province).filter(Boolean))
+  return [...set].sort()
+})
+const filteredCities = computed(() => {
+  if (!filterProvince.value) return cities.value
+  return cities.value.filter(c => c.province === filterProvince.value)
+})
 const range = ref('7')
 const compareDate = ref('')
 const allDates = ref([])
@@ -66,7 +81,9 @@ const cityMap = ref({})
 const trendChart = ref()
 const pieChart = ref()
 const compareChart = ref()
-let trendIns, pieIns, compareIns
+let trendIns = null
+let pieIns = null
+let compareIns = null
 
 function getDateRange() {
   const end = new Date()
@@ -75,28 +92,39 @@ function getDateRange() {
   return { startDate: start.toISOString().slice(0,10), endDate: end.toISOString().slice(0,10) }
 }
 
-function destroyCharts() {
-  if (trendIns) { trendIns.dispose(); trendIns = null }
-  if (pieIns) { pieIns.dispose(); pieIns = null }
-  if (compareIns) { compareIns.dispose(); compareIns = null }
+function initChart(refEl) {
+  if (!refEl) return null
+  try {
+    const instance = echarts.init(refEl)
+    return instance
+  } catch (e) {
+    console.warn('Chart init failed:', e)
+    return null
+  }
+}
+
+function ensureInstance(refEl, instanceRef) {
+  if (instanceRef) return instanceRef
+  return initChart(refEl)
 }
 
 function getCityName(cityId) { return cityMap.value[cityId] || `城市${cityId}` }
 
 async function loadTrendAndPie() {
-  destroyCharts()
-  await nextTick()
   const { startDate, endDate } = getDateRange()
   const res = await airDataApi.getTrend({ cityId: cityId.value, startDate, endDate })
   const list = res.data || []
 
-  if (trendChart.value) {
-    if (!trendIns) trendIns = echarts.init(trendChart.value)
+  // Ensure chart instances exist
+  trendIns = ensureInstance(trendChart.value, trendIns)
+  pieIns = ensureInstance(pieChart.value, pieIns)
+
+  if (trendIns) {
     trendIns.setOption({
       tooltip: { trigger: 'axis' },
       legend: { data: ['AQI', 'PM2.5', 'PM10', 'O₃'] },
       xAxis: { type: 'category', data: list.map(d => d.date) },
-      yAxis: { type: 'value' },
+      yAxis: { type: 'value', name: '浓度' },
       series: [
         { name: 'AQI', type: 'line', data: list.map(d => d.aqi), smooth: true, lineStyle: { width: 3, color: '#E6A23C' }, itemStyle: { color: '#E6A23C' } },
         { name: 'PM2.5', type: 'line', data: list.map(d => d.pm25), smooth: true },
@@ -108,8 +136,7 @@ async function loadTrendAndPie() {
     trendIns.resize()
   }
 
-  if (pieChart.value) {
-    if (!pieIns) pieIns = echarts.init(pieChart.value)
+  if (pieIns) {
     const aqiDistribution = { '优(0-50)': 0, '良(51-100)': 0, '轻度(101-150)': 0, '中度(151-200)': 0, '重度(201-300)': 0, '严重(>300)': 0 }
     list.forEach(d => {
       const a = d.aqi || 0
@@ -135,11 +162,10 @@ async function loadTrendAndPie() {
 
 async function loadCompare() {
   if (!compareDate.value) return
-  await nextTick()
   if (!compareChart.value) return
 
-  if (compareIns) { compareIns.dispose(); compareIns = null }
-  compareIns = echarts.init(compareChart.value)
+  compareIns = ensureInstance(compareChart.value, compareIns)
+  if (!compareIns) return
 
   const res = await airDataApi.getAllByDate(compareDate.value)
   const list = res.data || []
@@ -149,6 +175,7 @@ async function loadCompare() {
     compareIns.setOption({
       title: { text: '该日期暂无数据', left: 'center', top: 'center', textStyle: { color: '#999', fontSize: 14 } },
     })
+    compareIns.resize()
     return
   }
 
@@ -158,12 +185,18 @@ async function loadCompare() {
     xAxis: { type: 'category', data: valid.map(d => getCityName(d.cityId)), axisLabel: { rotate: 30 } },
     yAxis: { type: 'value' },
     series: [
-      { name: 'AQI', type: 'bar', data: valid.map(d => d.aqi), itemStyle: { borderRadius: [6,6,0,0], color: '#667eea' } },
+      { name: 'AQI', type: 'bar', data: valid.map(d => d.aqi), itemStyle: { borderRadius: [6,6,0,0], color: '#3b82f6' } },
       { name: 'PM2.5', type: 'bar', data: valid.map(d => d.pm25), itemStyle: { borderRadius: [6,6,0,0], color: '#f093fb' } },
     ],
     grid: { left: 50, right: 20, top: 40, bottom: 50 },
   })
   compareIns.resize()
+}
+
+function handleResize() {
+  if (trendIns) trendIns.resize()
+  if (pieIns) pieIns.resize()
+  if (compareIns) compareIns.resize()
 }
 
 onMounted(async () => {
@@ -178,13 +211,26 @@ onMounted(async () => {
   }
 
   await nextTick()
+  // Initialize chart instances
+  if (trendChart.value) trendIns = initChart(trendChart.value)
+  if (pieChart.value) pieIns = initChart(pieChart.value)
+  if (compareChart.value) compareIns = initChart(compareChart.value)
+
   await loadTrendAndPie()
   await loadCompare()
+
+  window.addEventListener('resize', handleResize)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleResize)
+  if (trendIns) { trendIns.dispose(); trendIns = null }
+  if (pieIns) { pieIns.dispose(); pieIns = null }
+  if (compareIns) { compareIns.dispose(); compareIns = null }
 })
 </script>
 
 <style scoped>
-.charts-page { }
 .filter-card {
   border-radius: 14px;
   border: none;
@@ -195,9 +241,12 @@ onMounted(async () => {
   border-radius: 14px;
   border: none;
   box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-  margin-bottom: 16px;
+  transition: box-shadow 0.3s;
 }
-.chart-title { font-weight: 600; font-size: 14px; }
+.chart-card:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+.chart-title { font-weight: 600; font-size: 14px; display: flex; align-items: center; }
 .chart-header-row { display: flex; align-items: center; gap: 10px; }
 .chart-date-hint { font-size: 12px; color: #999; }
 .chart-empty-hint { text-align: center; padding: 80px 0; color: #bbb; font-size: 13px; }

@@ -3,6 +3,10 @@ package com.example.airquality.controller;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.example.airquality.service.OperationLogService;
+import com.example.airquality.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,11 +28,34 @@ public class AirQualityDataController {
 
     private final AirQualityDataService airQualityDataService;
     private final AqiLevelService aqiLevelService;
+    private final OperationLogService operationLogService;
+    private final UserService userService;
+    private final HttpServletRequest request;
 
     public AirQualityDataController(AirQualityDataService airQualityDataService,
-                                     AqiLevelService aqiLevelService) {
+                                     AqiLevelService aqiLevelService,
+                                     OperationLogService operationLogService,
+                                     UserService userService,
+                                     HttpServletRequest request) {
         this.airQualityDataService = airQualityDataService;
         this.aqiLevelService = aqiLevelService;
+        this.operationLogService = operationLogService;
+        this.userService = userService;
+        this.request = request;
+    }
+
+    private String getClientIp() {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isBlank()) ip = request.getRemoteAddr();
+        if (ip != null && ip.contains(",")) ip = ip.split(",")[0].trim();
+        return ip;
+    }
+
+    private void logAdminOp(Authentication auth, String action, String target, String detail) {
+        Long userId = auth != null ? (Long) auth.getPrincipal() : 0L;
+        String username = "";
+        try { username = userService.getById(userId).getUsername(); } catch (Exception ignored) {}
+        operationLogService.log(userId, username, action, target, detail, getClientIp());
     }
 
     @GetMapping("/{id}")
@@ -87,33 +114,38 @@ public class AirQualityDataController {
     }
 
     @PostMapping
-    public Result<Void> save(@RequestBody AirQualityData data) {
+    public Result<Void> save(@RequestBody AirQualityData data, Authentication auth) {
         airQualityDataService.save(data);
+        logAdminOp(auth, "create", "数据管理", "新增空气质量数据: 城市ID=" + data.getCityId() + " 日期=" + data.getDate());
         return Result.success();
     }
 
     @PostMapping("/batch")
-    public Result<Void> batchSave(@RequestBody List<AirQualityData> list) {
+    public Result<Void> batchSave(@RequestBody List<AirQualityData> list, Authentication auth) {
         airQualityDataService.batchSave(list);
+        logAdminOp(auth, "create", "数据管理", "批量采集数据: " + list.size() + "条");
         return Result.success();
     }
 
     @PutMapping("/{id}")
-    public Result<Void> update(@PathVariable Long id, @RequestBody AirQualityData data) {
+    public Result<Void> update(@PathVariable Long id, @RequestBody AirQualityData data, Authentication auth) {
         data.setId(id);
         airQualityDataService.update(data);
+        logAdminOp(auth, "update", "数据管理", "更新空气质量数据: ID=" + id);
         return Result.success();
     }
 
     @DeleteMapping("/{id}")
-    public Result<Void> delete(@PathVariable Long id) {
+    public Result<Void> delete(@PathVariable Long id, Authentication auth) {
         airQualityDataService.deleteById(id);
+        logAdminOp(auth, "delete", "数据管理", "删除空气质量数据: ID=" + id);
         return Result.success();
     }
 
     @DeleteMapping("/city/{cityId}")
-    public Result<Void> deleteByCityId(@PathVariable Long cityId) {
+    public Result<Void> deleteByCityId(@PathVariable Long cityId, Authentication auth) {
         airQualityDataService.deleteByCityId(cityId);
+        logAdminOp(auth, "delete", "数据管理", "删除城市空气质量数据: 城市ID=" + cityId);
         return Result.success();
     }
 }

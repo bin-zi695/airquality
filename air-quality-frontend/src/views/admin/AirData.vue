@@ -1,17 +1,22 @@
 <template>
   <div class="admin-air-data">
-    <el-card>
+    <el-card class="animate__animated animate__fadeInUp">
       <el-button type="primary" @click="openDialog(null)">新增数据记录</el-button>
       <el-button type="success" @click="triggerSync" :loading="syncing" style="margin-left:12px">
         <el-icon><Refresh /></el-icon> 采集数据
       </el-button>
     </el-card>
 
-    <el-card style="margin-top:16px">
+    <el-card class="animate__animated animate__fadeInUp" style="margin-top:16px;animation-delay:0.1s">
       <el-form :inline="true" :model="query">
+        <el-form-item label="省份">
+          <el-select v-model="filterProvince" placeholder="全部省份" clearable style="min-width:130px" @change="query.cityId = null">
+            <el-option v-for="p in provinces" :key="p" :label="p" :value="p" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="城市">
-          <el-select v-model="query.cityId" clearable placeholder="选择城市" style="min-width:150px">
-            <el-option v-for="c in cities" :key="c.id" :label="c.name" :value="c.id" />
+          <el-select v-model="query.cityId" clearable placeholder="选择城市" filterable style="min-width:150px">
+            <el-option v-for="c in filteredCities" :key="c.id" :label="`${c.name} · ${c.province || ''}`" :value="c.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="日期范围">
@@ -45,7 +50,7 @@
     <el-dialog v-model="dialogVisible" :title="editingData.id ? '编辑数据' : '新增数据'" width="600px">
       <el-form :model="form" label-width="80px">
         <el-row :gutter="16">
-          <el-col :span="12"><el-form-item label="城市"><el-select v-model="form.cityId" style="width:100%"><el-option v-for="c in cities" :key="c.id" :label="c.name" :value="c.id" /></el-select></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="城市"><el-select v-model="form.cityId" filterable style="width:100%"><el-option v-for="c in filteredCities" :key="c.id" :label="`${c.name} · ${c.province || ''}`" :value="c.id" /></el-select></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="日期"><el-date-picker v-model="form.date" value-format="YYYY-MM-DD" /></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="AQI"><el-input-number v-model="form.aqi" /></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="PM2.5"><el-input-number v-model="form.pm25" :precision="1" /></el-form-item></el-col>
@@ -64,7 +69,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { airDataApi, cityApi } from '@/api'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Refresh } from '@element-plus/icons-vue'
@@ -79,6 +84,16 @@ const cityMap = ref({})
 const dialogVisible = ref(false)
 const editingData = ref({})
 const query = reactive({ cityId: null, dateRange: null })
+const filterProvince = ref('')
+
+const provinces = computed(() => {
+  const set = new Set(cities.value.map(c => c.province).filter(Boolean))
+  return [...set].sort()
+})
+const filteredCities = computed(() => {
+  if (!filterProvince.value) return cities.value
+  return cities.value.filter(c => c.province === filterProvince.value)
+})
 const form = reactive({ cityId: null, date: null, aqi: null, pm25: null, pm10: null, so2: null, no2: null, co: null, o3: null, temperature: null, wind_speed: '', weather: '' })
 
 function getCityName(id) { return cityMap.value[id] || '' }
@@ -145,3 +160,19 @@ onMounted(async () => {
   cities.value.forEach(c => { cityMap.value[c.id] = c.name })
 })
 </script>
+
+<style scoped>
+.admin-air-data :deep(.el-card) {
+  border-radius: 14px;
+  border: none;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+.admin-air-data :deep(.el-table th.el-table__cell) {
+  background: #f8f9fc !important;
+  font-weight: 600 !important;
+  color: #1a1a2e !important;
+}
+.admin-air-data :deep(.el-table__row:hover) {
+  background: #f0f5ff !important;
+}
+</style>

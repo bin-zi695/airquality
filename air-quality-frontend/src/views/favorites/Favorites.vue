@@ -1,12 +1,15 @@
 <template>
   <div class="favorites-page">
-    <el-card class="add-card" shadow="never">
+    <el-card class="add-card animate__animated animate__fadeInUp" shadow="never">
       <template #header>
         <span class="card-title"><span class="title-dot"></span>添加收藏城市</span>
       </template>
       <div class="add-row">
-        <el-select v-model="selectedCityId" placeholder="搜索并选择城市" clearable size="large" class="city-picker">
-          <el-option v-for="c in allCities" :key="c.id" :label="`${c.name} · ${c.province || ''}`" :value="c.id"
+        <el-select v-model="filterProvince" placeholder="全部省份" clearable size="large" style="width:140px">
+          <el-option v-for="p in provinces" :key="p" :label="p" :value="p" />
+        </el-select>
+        <el-select v-model="selectedCityId" placeholder="搜索并选择城市" clearable filterable size="large" class="city-picker">
+          <el-option v-for="c in filteredCities" :key="c.id" :label="`${c.name} · ${c.province || ''}`" :value="c.id"
             :disabled="favCityIds.includes(c.id)" />
         </el-select>
         <el-button type="primary" size="large" round @click="addFavorite" :disabled="!selectedCityId">
@@ -15,7 +18,7 @@
       </div>
     </el-card>
 
-    <el-card class="table-card" shadow="never" v-loading="loading">
+    <el-card class="table-card animate__animated animate__fadeInUp" shadow="never" v-loading="loading" style="animation-delay:0.1s">
       <template #header>
         <span class="card-title"><span class="title-dot"></span>我的收藏列表</span>
         <el-tag v-if="favCities.length" size="small" round type="success" style="margin-left:8px">{{ favCities.length }} 个城市</el-tag>
@@ -40,7 +43,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { cityApi, favoriteApi } from '@/api'
 import { useUserStore } from '@/store/user'
 import { ElMessage } from 'element-plus'
@@ -52,6 +55,16 @@ const favCities = ref([])
 const favCityIds = ref([])
 const selectedCityId = ref(null)
 const loading = ref(false)
+const filterProvince = ref('')
+
+const provinces = computed(() => {
+  const set = new Set(allCities.value.map(c => c.province).filter(Boolean))
+  return [...set].sort()
+})
+const filteredCities = computed(() => {
+  if (!filterProvince.value) return allCities.value
+  return allCities.value.filter(c => c.province === filterProvince.value)
+})
 
 async function loadData() {
   loading.value = true
@@ -81,7 +94,6 @@ onMounted(loadData)
 </script>
 
 <style scoped>
-.favorites-page { }
 .add-card {
   border-radius: 14px;
   border: none;
@@ -104,10 +116,10 @@ onMounted(loadData)
 .title-dot {
   width: 8px; height: 8px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #3b82f6, #06b6d4);
   display: inline-block;
 }
 .add-row { display: flex; align-items: center; gap: 12px; }
 .city-picker { width: 360px; }
-.city-name-cell { font-weight: 500; }
+.city-name-cell { font-weight: 500; display: flex; align-items: center; }
 </style>

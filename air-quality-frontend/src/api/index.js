@@ -68,3 +68,8 @@ export const articleApi = {
 export const configApi = {
   getByKey(key) { return request.get(`/config/${key}`) },
 }
+
+export const logApi = {
+  list(params) { return request.get('/logs', { params }) },
+  count() { return request.get('/logs/count') },
+}
