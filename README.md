@@ -301,17 +301,8 @@ cd air-quality-backend/airquality
 ```bash
 cd air-quality-frontend
 npm install
-
-# 开发模式（端口 3000，代理 /api 到 8080）
-npm run dev
-
-# 或构建后预览（端口 3000，proxy 同样生效）
-npm run build
-npm run preview
+npm run dev                   # 端口 3000（已代理 /api 到 8080）
 ```
-
-> 前后端部署在同一台机器时 `vite.config.js` 的 proxy target 为 `http://localhost:8080`，无需修改。
-> 生产部署建议使用 `npm run build + npm run preview`，Vite preview 服务器同样支持 proxy 转发。
 
 ### 5. 管理员账号
 
@@ -330,19 +321,3 @@ UPDATE air_quality_db.user SET role = 'admin' WHERE username = '你的用户名'
 ### 6. 初始化数据
 
 启动后访问 `http://localhost:8080/api/admin/sync-history?days=4` 回填最近 4 天历史数据。
-
-### 7. 部署到云服务器
-
-```bash
-# 上传代码后，启动后端
-cd /opt/airquality/air-quality-backend/airquality
-nohup mvn spring-boot:run > app.log 2>&1 &
-
-# 构建并启动前端
-cd /opt/airquality/air-quality-frontend
-npm install
-npm run build
-nohup npm run preview > front.log 2>&1 &
-```
-
-浏览器访问 `http://服务器IP:3000` 即可打开系统。
