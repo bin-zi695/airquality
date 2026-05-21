@@ -38,18 +38,26 @@
       <el-col :span="12">
         <el-card class="chart-card animate__animated animate__fadeInUp" shadow="never" style="animation-delay:0.2s">
           <template #header><span class="chart-title"><el-icon style="margin-right:4px"><Aim /></el-icon>AQI 等级分布</span></template>
-          <div ref="pieChart" style="height:350px"></div>
+          <div ref="pieChart" style="height:300px"></div>
         </el-card>
       </el-col>
       <el-col :span="12">
         <el-card class="chart-card animate__animated animate__fadeInUp" shadow="never" style="animation-delay:0.3s">
+          <template #header><span class="chart-title"><el-icon style="margin-right:4px"><Aim /></el-icon>污染等级占比</span></template>
+          <div ref="pieChart2" style="height:300px"></div>
+        </el-card>
+      </el-col>
+    </el-row>
+    <el-row :gutter="16" style="margin-top:16px">
+      <el-col :span="24">
+        <el-card class="chart-card animate__animated animate__fadeInUp" shadow="never" style="animation-delay:0.4s">
           <template #header>
             <div class="chart-header-row">
               <span class="chart-title"><el-icon style="margin-right:4px"><OfficeBuilding /></el-icon>多城市对比</span>
               <span class="chart-date-hint" v-if="compareDate">{{ compareDate }}</span>
             </div>
           </template>
-          <div ref="compareChart" style="height:350px"></div>
+          <div ref="compareChart" style="height:500px"></div>
           <div v-if="!compareDate" class="chart-empty-hint">请选择对比日期</div>
         </el-card>
       </el-col>
@@ -80,9 +88,11 @@ const allDates = ref([])
 const cityMap = ref({})
 const trendChart = ref()
 const pieChart = ref()
+const pieChart2 = ref()
 const compareChart = ref()
 let trendIns = null
 let pieIns = null
+let pieIns2 = null
 let compareIns = null
 
 function getDateRange() {
@@ -192,14 +202,44 @@ async function loadCompare() {
       { name: 'AQI', type: 'bar', data: valid.map(d => d.aqi).reverse(), itemStyle: { borderRadius: [0,6,6,0], color: '#3b82f6' } },
       { name: 'PM2.5', type: 'bar', data: valid.map(d => d.pm25).reverse(), itemStyle: { borderRadius: [0,6,6,0], color: '#f093fb' } },
     ],
-    grid: { left: 90, right: 20, top: 40, bottom: 30 },
+    grid: { left: 100, right: 30, top: 40, bottom: 30 },
   })
   compareIns.resize()
+
+  // 污染等级占比 (基于对比数据)
+  pieIns2 = ensureInstance(pieChart2.value, pieIns2)
+  if (pieIns2) {
+    const dist = { '优(0-50)': 0, '良(51-100)': 0, '轻度(101-150)': 0, '中度(151-200)': 0, '重度(201-300)': 0, '严重(>300)': 0 }
+    valid.forEach(d => {
+      const a = d.aqi || 0
+      if (a <= 50) dist['优(0-50)']++
+      else if (a <= 100) dist['良(51-100)']++
+      else if (a <= 150) dist['轻度(101-150)']++
+      else if (a <= 200) dist['中度(151-200)']++
+      else if (a <= 300) dist['重度(201-300)']++
+      else dist['严重(>300)']++
+    })
+    pieIns2.setOption({
+      tooltip: { trigger: 'item' },
+      graphic: [{
+        type: 'text', left: 'center', top: 'center',
+        style: { text: `${valid.length}城`, fontSize: 18, fontWeight: 'bold', fill: '#1a1a2e' },
+      }],
+      series: [{
+        type: 'pie', radius: ['40%', '70%'],
+        data: Object.entries(dist).map(([name, value]) => ({ name, value })),
+        label: { formatter: '{b}: {c}城' },
+        itemStyle: { borderRadius: 4, borderColor: '#fff', borderWidth: 2 },
+      }],
+    })
+    pieIns2.resize()
+  }
 }
 
 function handleResize() {
   if (trendIns) trendIns.resize()
   if (pieIns) pieIns.resize()
+  if (pieIns2) pieIns2.resize()
   if (compareIns) compareIns.resize()
 }
 
@@ -218,6 +258,7 @@ onMounted(async () => {
   // Initialize chart instances
   if (trendChart.value) trendIns = initChart(trendChart.value)
   if (pieChart.value) pieIns = initChart(pieChart.value)
+  if (pieChart2.value) pieIns2 = initChart(pieChart2.value)
   if (compareChart.value) compareIns = initChart(compareChart.value)
 
   await loadTrendAndPie()
@@ -230,6 +271,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize)
   if (trendIns) { trendIns.dispose(); trendIns = null }
   if (pieIns) { pieIns.dispose(); pieIns = null }
+  if (pieIns2) { pieIns2.dispose(); pieIns2 = null }
   if (compareIns) { compareIns.dispose(); compareIns = null }
 })
 </script>
