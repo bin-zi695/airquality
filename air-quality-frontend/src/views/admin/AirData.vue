@@ -36,7 +36,7 @@
         <el-table-column prop="temperature" label="最高气温" width="80">
           <template #default="{ row }">{{ row.temperature != null ? row.temperature + '℃' : '-' }}</template>
         </el-table-column>
-        <el-table-column prop="wind_speed" label="风力" width="80" />
+        <el-table-column prop="windSpeed" label="风力" width="80" />
         <el-table-column prop="weather" label="天气" width="90" />
         <el-table-column label="操作" width="160">
           <template #default="{ row }">
@@ -56,7 +56,7 @@
           <el-col :span="12"><el-form-item label="PM2.5"><el-input-number v-model="form.pm25" :precision="1" /></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="PM10"><el-input-number v-model="form.pm10" :precision="1" /></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="最高气温"><el-input-number v-model="form.temperature" :precision="1" /></el-form-item></el-col>
-          <el-col :span="12"><el-form-item label="风力"><el-input v-model="form.wind_speed" /></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="风力"><el-input v-model="form.windSpeed" /></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="天气"><el-input v-model="form.weather" /></el-form-item></el-col>
         </el-row>
       </el-form>
@@ -94,7 +94,7 @@ const filteredCities = computed(() => {
   if (!filterProvince.value) return cities.value
   return cities.value.filter(c => c.province === filterProvince.value)
 })
-const form = reactive({ cityId: null, date: null, aqi: null, pm25: null, pm10: null, so2: null, no2: null, co: null, o3: null, temperature: null, wind_speed: '', weather: '' })
+const form = reactive({ cityId: null, date: null, aqi: null, pm25: null, pm10: null, so2: null, no2: null, co: null, o3: null, temperature: null, windSpeed: '', weather: '' })
 
 function getCityName(id) { return cityMap.value[id] || '' }
 
@@ -117,7 +117,7 @@ async function fetchData() {
 
 function openDialog(row) {
   editingData.value = row || {}
-  Object.assign(form, { cityId: null, date: null, aqi: null, pm25: null, pm10: null, so2: null, no2: null, co: null, o3: null, temperature: null, wind_speed: '', weather: '' }, row || {})
+  Object.assign(form, { cityId: null, date: null, aqi: null, pm25: null, pm10: null, so2: null, no2: null, co: null, o3: null, temperature: null, windSpeed: '', weather: '' }, row || {})
   dialogVisible.value = true
 }
 

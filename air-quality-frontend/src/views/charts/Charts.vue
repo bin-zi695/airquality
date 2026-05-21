@@ -149,6 +149,10 @@ async function loadTrendAndPie() {
     })
     pieIns.setOption({
       tooltip: { trigger: 'item' },
+      graphic: [{
+        type: 'text', left: 'center', top: 'center',
+        style: { text: `${list.length}天`, fontSize: 20, fontWeight: 'bold', fill: '#1a1a2e' },
+      }],
       series: [{
         type: 'pie', radius: ['40%', '70%'],
         data: Object.entries(aqiDistribution).map(([name, value]) => ({ name, value })),
@@ -180,15 +184,15 @@ async function loadCompare() {
   }
 
   compareIns.setOption({
-    tooltip: { trigger: 'axis' },
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
     legend: { data: ['AQI', 'PM2.5'] },
-    xAxis: { type: 'category', data: valid.map(d => getCityName(d.cityId)), axisLabel: { rotate: 30 } },
-    yAxis: { type: 'value' },
+    yAxis: { type: 'category', data: valid.map(d => getCityName(d.cityId)).reverse(), axisLabel: { fontSize: 11 } },
+    xAxis: { type: 'value' },
     series: [
-      { name: 'AQI', type: 'bar', data: valid.map(d => d.aqi), itemStyle: { borderRadius: [6,6,0,0], color: '#3b82f6' } },
-      { name: 'PM2.5', type: 'bar', data: valid.map(d => d.pm25), itemStyle: { borderRadius: [6,6,0,0], color: '#f093fb' } },
+      { name: 'AQI', type: 'bar', data: valid.map(d => d.aqi).reverse(), itemStyle: { borderRadius: [0,6,6,0], color: '#3b82f6' } },
+      { name: 'PM2.5', type: 'bar', data: valid.map(d => d.pm25).reverse(), itemStyle: { borderRadius: [0,6,6,0], color: '#f093fb' } },
     ],
-    grid: { left: 50, right: 20, top: 40, bottom: 50 },
+    grid: { left: 90, right: 20, top: 40, bottom: 30 },
   })
   compareIns.resize()
 }

@@ -54,7 +54,7 @@
         <el-table-column prop="temperature" label="最高气温" width="90">
           <template #default="{ row }">{{ row.temperature != null ? row.temperature + '℃' : '-' }}</template>
         </el-table-column>
-        <el-table-column prop="wind_speed" label="风力" width="100" />
+        <el-table-column prop="windSpeed" label="风力" width="100" />
         <el-table-column prop="weather" label="天气状况" width="100" />
         <el-table-column label="操作" width="80" fixed="right">
           <template #default="{ row }">
